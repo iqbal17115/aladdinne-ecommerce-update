@@ -1,0 +1,11 @@
+{
+    "name": "PreOrder",
+    "alias": "preorder",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\PreOrder\\App\\Providers\\PreOrderServiceProvider"
+    ],
+    "files": []
+}

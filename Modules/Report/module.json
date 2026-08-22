@@ -1,0 +1,16 @@
+{
+    "id": 61460654,
+    "name": "Report",
+    "alias": "report",
+    "description": "",
+    "display_name": "Report Extension",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Report\\App\\Providers\\ReportServiceProvider"
+    ],
+    "version": "1.0.1",
+    "image": "/modules/report/icon.png",
+    "is_verified": false,
+    "license_key": ""
+}
