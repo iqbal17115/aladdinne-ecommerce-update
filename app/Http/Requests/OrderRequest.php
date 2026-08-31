@@ -37,11 +37,10 @@ class OrderRequest extends FormRequest
             'payment_method' => 'required|string',
             'coupon_code' => 'nullable|string|max:50',
             'area_id' => 'nullable|exists:areas,id',
-            // `nullable` so a signed-in customer ordering to a saved address may
-            // send latitude/longitude as null. Without it `numeric` rejects the
-            // null and the order fails even though the coordinates aren't needed.
-            'longitude' => 'nullable|required_without:address_id|numeric|between:-180,180',
-            'latitude' => 'nullable|required_without:address_id|numeric|between:-90,90',
+            // Location is optional for order placement. Some customers may not
+            // grant browser geolocation access, and the order should still be allowed.
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'latitude' => 'nullable|numeric|between:-90,90',
         ];
     }
 

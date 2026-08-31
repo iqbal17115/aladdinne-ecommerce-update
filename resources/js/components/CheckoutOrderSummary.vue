@@ -567,14 +567,6 @@ const processGuestOrderConfirm = async () => {
 
     await guestAddressStore.captureLocation();
 
-    if (!guestAddressStore.latitude || !guestAddressStore.longitude) {
-        toast.error(t("Location access is required to place order. Please allow location permission."), {
-            position:
-                master.langDirection === "rtl" ? "bottom-right" : "bottom-left",
-        });
-        return;
-    }
-
     if (basketStore.checkoutProducts.length > 0) {
         isProcessing.value = true;
         axios

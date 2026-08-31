@@ -244,13 +244,8 @@
                                             </div>
                                         </div> -->
 
-                                        <div class="mt-6">
-                                            <MapDisplay
-                                                :enableSetLocation="true"
-                                                @location-updated="
-                                                    updateLocation
-                                                "
-                                            />
+                                        <div class="mt-6 hidden">
+                                            <!-- Map removed from checkout -->
                                         </div>
 
                                         <div
@@ -498,7 +493,6 @@ import { onMounted, ref } from "vue";
 import { useAuth } from "../stores/AuthStore";
 import { useToast } from "vue-toastification";
 import { useMaster } from "../stores/MasterStore";
-import MapDisplay from "./MapDisplay.vue";
 
 const masterStore = useMaster();
 const toast = useToast();
@@ -584,13 +578,26 @@ const getAreaOptions = () => {
         });
 };
 
-const updateLocation = (coords) => {
-    formData.value.latitude = coords.lat;
-    formData.value.longitude = coords.lng;
+const setCurrentLocation = () => {
+    if (!navigator.geolocation) {
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            formData.value.latitude = position.coords.latitude;
+            formData.value.longitude = position.coords.longitude;
+        },
+        () => {
+            formData.value.latitude = 0;
+            formData.value.longitude = 0;
+        }
+    );
 };
 
 onMounted(() => {
     getAreaOptions();
+    setCurrentLocation();
 });
 </script>
 

@@ -91,12 +91,7 @@
                 </div>
             </div>
 
-            <div class="mt-6">
-                <MapDisplay
-                    :enableSetLocation="true"
-                    @location-updated="updateLocation"
-                />
-            </div>
+            <!-- Map removed from checkout to avoid showing location picker -->
 
             <!-- <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
                 <div>
@@ -335,7 +330,6 @@ import ToastSuccessMessage from "./ToastSuccessMessage.vue";
 import LoadingSpin from "./LoadingSpin.vue";
 
 import { useMaster } from "../stores/MasterStore";
-import MapDisplay from "./MapDisplay.vue";
 import { useBasketStore } from "../stores/BasketStore";
 
 const masterStore = useMaster();
@@ -370,15 +364,26 @@ const getAreaOptions = () => {
         });
 };
 
-const updateLocation = (coords) => {
-    guestAddressStore.latitude = coords.lat;
-    guestAddressStore.longitude = coords.lng;
+const setCurrentLocation = () => {
+    if (!navigator.geolocation) {
+        return;
+    }
 
-    console.log(coords);
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            guestAddressStore.latitude = position.coords.latitude;
+            guestAddressStore.longitude = position.coords.longitude;
+        },
+        () => {
+            guestAddressStore.latitude = 0;
+            guestAddressStore.longitude = 0;
+        }
+    );
 };
 
 onMounted(() => {
     getAreaOptions();
+    setCurrentLocation();
 });
 
 watch(
