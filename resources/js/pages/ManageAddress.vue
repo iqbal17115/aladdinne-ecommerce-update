@@ -25,7 +25,7 @@
                         </div>
                         <div class="text-slate-500 text-base font-normal leading-normal truncate">
                             {{ (address?.flat_no ? address?.flat_no  + ', ' : '') + address?.address_line + ', ' +
-                    (address?.address_line2 ? address?.address_line2 + ', ' : '') }} {{ address?.area  }}
+                    (address?.address_line2 ? address?.address_line2 + ', ' : '') }} {{ address?.thana }}{{ address?.area ? ', ' + address?.area : '' }}
                         </div>
 
                         <div v-if="address.is_default"

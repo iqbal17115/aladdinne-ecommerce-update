@@ -31,6 +31,8 @@ class PreOrderDeliveryRepository
             $address->area_id ?? $request->area_id ?? null,
         );
 
+        $resolvedThanaId = $address->thana_id ?? $request->thana_id ?? null;
+
         $shop = $product->shop;
 
         $distanceDuration = self::orderDistanceDuration(
@@ -43,7 +45,8 @@ class PreOrderDeliveryRepository
         $deliveryCharge = self::calculateDeliveryPrice(
             $distanceDuration['distanceKm'],
             $distanceDuration['durationMin'],
-            $resolvedAreaId
+            $resolvedAreaId,
+            $resolvedThanaId
         );
 
         // digital products never carry a delivery charge

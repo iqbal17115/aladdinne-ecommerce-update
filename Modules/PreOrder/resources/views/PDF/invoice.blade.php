@@ -183,7 +183,7 @@
                 <div class="text-gray">{{ __('Bill To') }}:</div>
                 <div class="fw-bold" style="font-size: 16px;">{{ $user?->name }}</div>
                 <div class="text-gray" style="margin-top: 5px;">
-                    {{ collect([$address?->address_type, $address?->address_line, $address?->address_line2, $address?->area])->filter()->implode(', ') }}
+                    {{ collect([$address?->address_type, $address?->address_line, $address?->address_line2, $address?->thana?->name, $address?->area])->filter()->implode(', ') }}
                 </div>
                 <div style="margin-top: 5px;">
                     <span class="text-gray">{{ __('Email') }}:</span> {{ $user?->email }}<br>

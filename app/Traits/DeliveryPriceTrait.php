@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\Area;
 use App\Models\GeneraleSetting;
+use App\Models\Thana;
 use App\Repositories\AreaRepository;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +17,12 @@ trait DeliveryPriceTrait
         return GeneraleSetting::first();
     }
 
-    protected static function calculateDeliveryPrice($distance, $duration, $areaId)
+    /**
+     * Base rate is the selected Thana's own shipping charge when one is
+     * set; otherwise it falls back to the Area's flat delivery_amount
+     * (legacy addresses / areas with no thana picked).
+     */
+    protected static function calculateDeliveryPrice($distance, $duration, $areaId, $thanaId = null)
     {
         $settings = self::getDeliverySettings();
 
@@ -25,7 +31,8 @@ trait DeliveryPriceTrait
         }
 
         $areaData = AreaRepository::query()->where('id', $areaId)->first();
-        $baseRate    = $areaData->delivery_amount ?? 0;
+        $thana = $thanaId ? Thana::find($thanaId) : null;
+        $baseRate = $thana->shipping_charge ?? $areaData->delivery_amount ?? 0;
 
         if (! $settings?->is_distance_charge) {
             return round($baseRate, 2);

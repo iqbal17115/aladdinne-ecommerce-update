@@ -27,6 +27,7 @@ class CheckoutRequest extends FormRequest
             'coupon_code' => 'nullable|string|max:50',
             'address_id' => 'nullable|exists:addresses,id',
             'area_id' => 'nullable|exists:areas,id',
+            'thana_id' => 'nullable|exists:thanas,id',
             // Coordinates are optional here. This endpoint only previews the
             // totals, and it's hit as soon as the checkout page loads — before
             // the customer has picked an address or granted location access.

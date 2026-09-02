@@ -443,7 +443,7 @@ export const useBasketStore = defineStore("basketStore", {
             checkoutTracked = false;
         },
 
-        fetchCheckoutProducts(addressId, area_id) {
+        fetchCheckoutProducts(addressId, area_id, thana_id) {
             const authStore = useAuth();
             const masterStore = useMaster();
             const guestAddressStore = useGuestAddress();
@@ -455,6 +455,7 @@ export const useBasketStore = defineStore("basketStore", {
                     shop_ids: this.selectedShopIds,
                     address_id: addressId && addressId,
                     area_id: area_id && area_id,
+                    thana_id: thana_id && thana_id,
                     ...locationData,
                 }, {
                     headers: {

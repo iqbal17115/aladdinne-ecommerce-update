@@ -334,6 +334,9 @@
                     @if ($address?->address_line2)
                         ,{{ $address->address_line2 }}
                     @endif
+                    @if ($address?->thana?->name)
+                        ,{{ $address->thana->name }}
+                    @endif
                     @if ($address?->area)
                         ,{{ $address?->area }}
                     @endif

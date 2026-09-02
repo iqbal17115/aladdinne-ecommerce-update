@@ -231,7 +231,8 @@ class OrderRepository extends Repository
             'address_id' => $request->address_id,
             'instruction' => $request->note,
             'payment_status' => PaymentStatus::PENDING->value,
-            'order_area' => $address->getArea->name ?? null
+            'order_area' => $address->getArea->name ?? null,
+            'order_thana' => $address->thana->name ?? null,
         ]);
 
         $generalSetting = generaleSetting('setting');
@@ -255,7 +256,7 @@ class OrderRepository extends Repository
         if (!$address) {
             return 0;
         }
-        return $address->deliveryAmount();
+        return $address->shippingCharge();
     }
 
     private static function getCartWiseAmounts(Shop $shop, $carts, $couponCode = null): array
@@ -278,6 +279,8 @@ class OrderRepository extends Repository
             $address->area_id ?? request()->area_id,
         );
 
+        $resolvedThanaId = $address->thana_id ?? request()->thana_id;
+
         if ($resolvedAreaId && $shop->latitude && $shop->longitude) {
             $distanceDuration = self::orderDistanceDuration(
                 (float) $shop->latitude,
@@ -289,7 +292,8 @@ class OrderRepository extends Repository
             $deliveryCharge = self::calculateDeliveryPrice(
                 $distanceDuration['distanceKm'],
                 $distanceDuration['durationMin'],
-                $resolvedAreaId
+                $resolvedAreaId,
+                $resolvedThanaId
             );
         }
 

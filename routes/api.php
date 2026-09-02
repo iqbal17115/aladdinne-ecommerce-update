@@ -53,6 +53,7 @@ Route::controller(SocialAuthController::class)->group(function () {
 Route::controller(CountryController::class)->group(function () {
     Route::get('/countries', 'index');
     Route::get('/areas', 'indexAreas');
+    Route::get('/areas/{area}/thanas', 'indexThanas');
 });
 
 Route::controller(AuthController::class)->group(function () {

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdController;
 use App\Http\Controllers\Admin\AreaController;
+use App\Http\Controllers\Admin\ThanaController;
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
@@ -596,6 +597,17 @@ Route::name('admin.')->group(function () {
              Route::get('/area/{area}/toggle', 'toggle')->name('area.toggle');
              Route::get('/area/{area}/destroy', 'destroy')->name('area.destroy');
          });
+
+        // thana route (per-area shipping charge rate table)
+        Route::controller(ThanaController::class)->group(function () {
+            Route::get('/thanas', 'index')->name('thana.index');
+            Route::get('/thana/create', 'create')->name('thana.create');
+            Route::get('/thana/{thana}/edit', 'edit')->name('thana.edit');
+            Route::post('/thana/store', 'store')->name('thana.store');
+            Route::put('/thana/{thana}/update', 'update')->name('thana.update');
+            Route::get('/thana/{thana}/toggle', 'toggle')->name('thana.toggle');
+            Route::get('/thana/{thana}/destroy', 'destroy')->name('thana.destroy');
+        });
 
         // footer route
         Route::controller(FooterController::class)->group(function () {

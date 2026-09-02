@@ -195,7 +195,8 @@
                                     <span v-if="order.address?.address_line2">, {{ order.address?.address_line2 }}</span>
                                 </div>
                                 <div>
-                                    <span v-if="order.address?.area">{{ order.address?.area }}</span>
+                                    <span v-if="order.address?.thana">{{ order.address?.thana }}</span>
+                                    <span v-if="order.address?.area">{{ order.address?.thana ? ', ' : '' }}{{ order.address?.area }}</span>
                                     <span v-if="order.address?.post_code"> - {{ order.address?.post_code }}</span>
                                 </div>
                             </div>

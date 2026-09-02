@@ -8,8 +8,10 @@ use App\Http\Resources\SizeResource;
 use App\Models\Address;
 use App\Models\Cart;
 use App\Models\GeneraleSetting;
+use App\Models\Area;
 use App\Models\Product;
 use App\Models\Shop;
+use App\Models\Thana;
 use App\Traits\DeliveryPriceTrait;
 use Illuminate\Support\Number;
 use Mpdf\Tag\B;
@@ -192,10 +194,14 @@ class CartRepository extends Repository
     private static function getDeliveryAmount()
     {
         if ($address = Address::find(request()->address_id)) {
-            return $address->deliveryAmount() ?? 0;
+            return $address->shippingCharge() ?? 0;
         }
 
-        // Check for area if no address
+        // Check for thana/area if no address
+        if ($thana = Thana::find(request()->thana_id)) {
+            return $thana->shipping_charge ?? 0;
+        }
+
         return Area::find(request()->area_id)?->delivery_amount ?? 0;
     }
 
@@ -224,8 +230,10 @@ class CartRepository extends Repository
             $address->area_id ?? $request->area_id,
         );
 
+        $resolvedThanaId = $address->thana_id ?? $request->thana_id;
+
         // Distance/duration needs both ends of the trip — fall back to a flat
-        // (area-rate-only) delivery charge when either side is missing.
+        // (area/thana-rate-only) delivery charge when either side is missing.
         $distanceDuration = ($shop?->latitude !== null && $shop?->longitude !== null && $deliveryLatitude !== null && $deliveryLongitude !== null)
             ? static::orderDistanceDuration(
                 (float) $shop->latitude,
@@ -286,7 +294,8 @@ class CartRepository extends Repository
         $deliveryCharge = self::calculateDeliveryPrice(
             $distanceDuration['distanceKm'],
             $distanceDuration['durationMin'],
-            $resolvedAreaId
+            $resolvedAreaId,
+            $resolvedThanaId
         );
         foreach ($groupCarts as $shopId => $shopCarts) {
 

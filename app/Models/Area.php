@@ -21,4 +21,9 @@ class Area extends Model
     {
         return $this->hasMany(Address::class, 'area_id');
     }
+
+    public function thanas()
+    {
+        return $this->hasMany(Thana::class);
+    }
 }

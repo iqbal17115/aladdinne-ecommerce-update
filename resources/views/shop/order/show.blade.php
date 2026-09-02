@@ -243,6 +243,10 @@
                     <span class="fw-medium">{{ $order->order_area ?? 'N/A' }}</span>
                 </div>
                 <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12">
+                    <span class="text-color">{{ __('Thana') }}: </span>
+                    <span class="fw-medium">{{ $order->order_thana ?? 'N/A' }}</span>
+                </div>
+                <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12">
                     <span class="text-color">{{ __('Address Line') }}: </span>
                     <span class="fw-medium">{{ $order->address?->address_line }}</span>
                 </div>

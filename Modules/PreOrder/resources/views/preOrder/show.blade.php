@@ -331,6 +331,10 @@
                     <span class="fw-medium">{{ $preOrder->address?->address_type }}</span>
                 </div>
                 <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12">
+                    <span class="text-color">{{ __('Thana') }}: </span>
+                    <span class="fw-medium">{{ $preOrder->address?->thana?->name }}</span>
+                </div>
+                <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12">
                     <span class="text-color">{{ __('Area') }}: </span>
                     <span class="fw-medium">{{ $preOrder->address?->area }}</span>
                 </div>
@@ -534,7 +538,7 @@
                                 </div>
                                 <div class="steadfast-summary-row">
                                     <span class="text-color">{{ __('Address') }}</span>
-                                    <span class="fw-medium text-end">{{ $preOrder->address?->address_line }}{{ $preOrder->address?->area ? ', '.$preOrder->address->area : '' }}</span>
+                                    <span class="fw-medium text-end">{{ $preOrder->address?->address_line }}{{ $preOrder->address?->thana?->name ? ', '.$preOrder->address->thana->name : '' }}{{ $preOrder->address?->area ? ', '.$preOrder->address->area : '' }}</span>
                                 </div>
                                 <div class="steadfast-summary-row">
                                     <span class="text-color">{{ __('COD Amount') }}</span>

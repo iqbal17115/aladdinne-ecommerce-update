@@ -34,7 +34,6 @@
                         type="text"
                         id="Phone"
                         :placeholder="$t('Enter phone')"
-                        value="0123456789"
                         class="form-input"
                         v-model="formData.phone"
                         :class="
@@ -42,7 +41,7 @@
                                 ? 'border-red-500'
                                 : 'border-slate-200 dark:border-slate-600'
                         "
-                        :maxlength="masterStore.phoneMaxLength"
+                        maxlength="11"
                         @input="
                             formData.phone = formData.phone.replace(
                                 /[^\d]/g,
@@ -54,6 +53,32 @@
                         v-if="errors && errors?.phone"
                         class="text-red-500 text-sm"
                         >{{ errors?.phone[0] }}</span
+                    >
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+                <div>
+                    <label for="email" class="form-label mb-2">
+                        {{ $t("Email") }}
+                        <span class="text-slate-400 text-sm">({{ $t('Optional') }})</span>
+                    </label>
+                    <input
+                        type="email"
+                        id="email"
+                        v-model="formData.email"
+                        :placeholder="$t('Enter email')"
+                        class="form-input"
+                        :class="
+                            errors && errors?.email
+                                ? 'border-red-500'
+                                : 'border-slate-200 dark:border-slate-600'
+                        "
+                    />
+                    <span
+                        v-if="errors && errors?.email"
+                        class="text-red-500 text-sm"
+                        >{{ errors?.email[0] }}</span
                     >
                 </div>
             </div>
@@ -73,6 +98,7 @@
                     <select
                         id="Area"
                         v-model="formData.area_id"
+                        @change="onAreaChange"
                         :class="[
                             'form-input',
                             errors && errors?.area
@@ -97,6 +123,38 @@
                     >
                 </div>
 
+                <div>
+                    <label for="Thana" class="form-label mb-2">
+                        {{ $t("Thana") }}
+                        <small class="text-red-500">*</small>
+                    </label>
+                    <select
+                        id="Thana"
+                        v-model="formData.thana_id"
+                        :disabled="!formData.area_id"
+                        :class="[
+                            'form-input',
+                            errors && errors?.thana_id
+                                ? 'border-red-500'
+                                : 'border-slate-200 dark:border-slate-600',
+                        ]"
+                    >
+                        <option value="" disabled selected>
+                            {{ $t("Select Thana") }}
+                        </option>
+                        <option v-for="thana in thanaOptions" :key="thana.id" :value="thana.id">
+                            {{ thana.name }}
+                        </option>
+                    </select>
+                    <span
+                        v-if="errors && errors?.thana_id"
+                        class="text-red-500 text-sm"
+                        >{{ errors?.thana_id[0] }}</span
+                    >
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
                 <div>
                     <label for="address" class="form-label mb-2">
                         {{ $t("Address Line ") }}
@@ -262,8 +320,10 @@ const authStore = useAuth();
 
 const formData = ref({
     name: "",
+    email: "",
     phone: "",
     area_id: "",
+    thana_id: "",
     flat_no: "",
     post_code: "",
     address_line: "",
@@ -277,6 +337,7 @@ const formData = ref({
 const errors = ref({});
 
 const areaOptions = ref([]);
+const thanaOptions = ref([]);
 
 const content = {
     component: ToastSuccessMessage,
@@ -351,6 +412,37 @@ const getAreaOptions = () => {
                         : "bottom-left",
             });
         });
+};
+
+const getThanaOptions = (areaId) => {
+    thanaOptions.value = [];
+
+    if (!areaId) {
+        return;
+    }
+
+    axios
+        .get(`/areas/${areaId}/thanas`, {
+            headers: {
+                Authorization: authStore.token,
+            },
+        })
+        .then((response) => {
+            thanaOptions.value = response.data.data.thanas;
+        })
+        .catch((error) => {
+            toast.error(error.response.data.message, {
+                position:
+                    masterStore.langDirection === "rtl"
+                        ? "bottom-right"
+                        : "bottom-left",
+            });
+        });
+};
+
+const onAreaChange = () => {
+    formData.value.thana_id = "";
+    getThanaOptions(formData.value.area_id);
 };
 
 const updateLocation = (coords) => {

@@ -579,6 +579,7 @@ const processGuestOrderConfirm = async () => {
                     email: guestAddressStore.email,
                     phone: guestAddressStore.phone,
                     area_id: guestAddressStore.area_id,
+                    thana_id: guestAddressStore.thana_id,
                     address_line: guestAddressStore.address_line,
                     address_type: guestAddressStore.address_type,
                     latitude: guestAddressStore.latitude,

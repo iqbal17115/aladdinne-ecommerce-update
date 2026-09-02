@@ -134,8 +134,11 @@
                                             <tr>
                                                 <td
                                                     style="width: 100%; font-size: 14px; line-height: 18px; color: #666666; padding-bottom: 10px;">
+                                                    @if ($order->address?->thana?->name)
+                                                        {{ $order->address->thana->name }}
+                                                    @endif
                                                     @if ($order->address?->area)
-                                                        {{ $order->address?->area }}
+                                                        , {{ $order->address?->area }}
                                                     @endif
                                                     @if ($order->address?->address_line2)
                                                         , {{ $order->address?->address_line2 }}

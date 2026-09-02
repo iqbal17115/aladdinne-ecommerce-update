@@ -669,10 +669,10 @@
         </div>
     </li>
 @endhasPermission
-@hasPermission(['admin.country.index', 'admin.area.index', 'admin.weightWiseDeliveryCharge.index'])
+@hasPermission(['admin.country.index', 'admin.area.index', 'admin.thana.index', 'admin.weightWiseDeliveryCharge.index'])
     <!--- Address --->
     <li>
-        <a class="menu {{ request()->routeIs('admin.country.*', 'admin.area.*', 'admin.weightWiseDeliveryCharge.*') ? 'active' : '' }}"
+        <a class="menu {{ request()->routeIs('admin.country.*', 'admin.area.*', 'admin.thana.*', 'admin.weightWiseDeliveryCharge.*') ? 'active' : '' }}"
             data-bs-toggle="collapse" href="#addressMenu">
             <span>
                 <img class="menu-icon" src="{{ asset('assets/icons-admin/country.svg') }}" alt="icon"
@@ -681,7 +681,7 @@
             </span>
             <img src="{{ asset('assets/icons-admin/caret-down.svg') }}" alt="icon" class="downIcon">
         </a>
-        <div class="collapse dropdownMenuCollapse {{ $request->routeIs('admin.country.*', 'admin.area.*', 'admin.weightWiseDeliveryCharge.*') ? 'show' : '' }}"
+        <div class="collapse dropdownMenuCollapse {{ $request->routeIs('admin.country.*', 'admin.area.*', 'admin.thana.*', 'admin.weightWiseDeliveryCharge.*') ? 'show' : '' }}"
             id="addressMenu">
             <div class="listBar">
                 @hasPermission('admin.country.index')
@@ -694,6 +694,12 @@
                     <a href="{{ route('admin.area.index') }}"
                         class="subMenu hasCount {{ request()->routeIs('admin.area.*') ? 'active' : '' }}">
                         {{ __('Area & Delivery') }}
+                    </a>
+                @endhasPermission
+                @hasPermission('admin.thana.index')
+                    <a href="{{ route('admin.thana.index') }}"
+                        class="subMenu hasCount {{ request()->routeIs('admin.thana.*') ? 'active' : '' }}">
+                        {{ __('Thana & Shipping Charge') }}
                     </a>
                 @endhasPermission
                 @hasPermission('admin.weightWiseDeliveryCharge.index')

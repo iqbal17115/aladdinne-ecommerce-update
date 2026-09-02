@@ -65,7 +65,6 @@
                         type="text"
                         id="Phone"
                         :placeholder="$t('Enter phone')"
-                        value="0123456789"
                         class="form-input"
                         v-model="guestAddressStore.phone"
                         :class="
@@ -74,7 +73,7 @@
                                 ? 'border-red-500'
                                 : 'border-slate-200 dark:border-slate-600'
                         "
-                        :maxlength="masterStore.phoneMaxLength"
+                        maxlength="11"
                         @input="
                             guestAddressStore.phone =
                                 guestAddressStore.phone.replace(/[^\d]/g, '')
@@ -91,91 +90,17 @@
                 </div>
             </div>
 
-            <!-- Map removed from checkout to avoid showing location picker -->
-
-            <!-- <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
-                <div>
-                    <label for="Area" class="form-label mb-2">
-                        {{ $t("Area") }}
-                    </label>
-                    <input
-                        type="text"
-                        id="Area"
-                        :placeholder="$t('Enter Area')"
-                        class="form-input"
-                        v-model="guestAddressStore.area"
-                        :class="
-                            guestAddressStore.errors &&
-                            guestAddressStore.errors?.area
-                                ? 'border-red-500'
-                                : 'border-slate-200 dark:border-slate-600'
-                        "
-                    />
-                    <span
-                        v-if="
-                            guestAddressStore.errors &&
-                            guestAddressStore.errors?.area
-                        "
-                        class="text-red-500 text-sm"
-                        >{{ guestAddressStore.errors?.area[0] }}</span
-                    >
+            <div class="mt-6">
+                <div
+                    class="text-slate-950 dark:text-white text-base font-medium leading-normal mb-2"
+                >
+                    {{ $t("Pin Your Location") }}
                 </div>
-                <div>
-                    <label for="Flat" class="form-label mb-2">
-                        {{ $t("Flat") }}</label
-                    >
-                    <input
-                        type="text"
-                        id="Flat"
-                        :placeholder="$t('Enter Flat no')"
-                        value=""
-                        class="form-input"
-                        v-model="guestAddressStore.flat_no"
-                        :class="
-                            guestAddressStore.errors &&
-                            guestAddressStore.errors?.flat_no
-                                ? 'border-red-500'
-                                : 'border-slate-200 dark:border-slate-600'
-                        "
-                    />
-                    <span
-                        v-if="
-                            guestAddressStore.errors &&
-                            guestAddressStore.errors?.flat_no
-                        "
-                        class="text-red-500 text-sm"
-                        >{{ guestAddressStore.errors?.flat_no[0] }}</span
-                    >
-                </div>
-
-                <div>
-                    <label for="Postal" class="form-label mb-2">
-                        {{ $t("Postal Code") }}
-                    </label>
-                    <input
-                        type="text"
-                        id="Postal"
-                        v-model="guestAddressStore.post_code"
-                        :placeholder="$t('Enter Postal Code')"
-                        value=""
-                        class="form-input"
-                        :class="
-                            guestAddressStore.errors &&
-                            guestAddressStore.errors?.post_code
-                                ? 'border-red-500'
-                                : 'border-slate-200 dark:border-slate-600'
-                        "
-                    />
-                    <span
-                        v-if="
-                            guestAddressStore.errors &&
-                            guestAddressStore.errors?.post_code
-                        "
-                        class="text-red-500 text-sm"
-                        >{{ guestAddressStore.errors?.post_code[0] }}</span
-                    >
-                </div>
-            </div> -->
+                <MapDisplay
+                    :enableSetLocation="true"
+                    @location-updated="updateLocation"
+                />
+            </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
                 <div>
@@ -185,6 +110,7 @@
                     <select
                         id="Area"
                         v-model="guestAddressStore.area_id"
+                        @change="onAreaChange"
                         :class="[
                             'form-input',
                             guestAddressStore.errors &&
@@ -213,6 +139,42 @@
                     >
                 </div>
 
+                <div>
+                    <label for="Thana" class="form-label mb-2">
+                        {{ $t("Thana") }}
+                        <small class="text-red-500">*</small>
+                    </label>
+                    <select
+                        id="Thana"
+                        v-model="guestAddressStore.thana_id"
+                        :disabled="!guestAddressStore.area_id"
+                        :class="[
+                            'form-input',
+                            guestAddressStore.errors &&
+                            guestAddressStore.errors?.thana_id
+                                ? 'border-red-500'
+                                : 'border-slate-200 dark:border-slate-600',
+                        ]"
+                    >
+                        <option value="" disabled selected>
+                            {{ $t("Select Thana") }}
+                        </option>
+                        <option v-for="thana in thanaOptions" :key="thana.id" :value="thana.id">
+                            {{ thana.name }}
+                        </option>
+                    </select>
+                    <span
+                        v-if="
+                            guestAddressStore.errors &&
+                            guestAddressStore.errors?.thana_id
+                        "
+                        class="text-red-500 text-sm"
+                        >{{ guestAddressStore.errors?.thana_id[0] }}</span
+                    >
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
                 <div>
                     <label for="address" class="form-label mb-2">
                         {{ $t("Address Line") }}
@@ -328,6 +290,7 @@ import { useAuth } from "../stores/AuthStore";
 import { useGuestAddress } from "../stores/GuestAddressStore";
 import ToastSuccessMessage from "./ToastSuccessMessage.vue";
 import LoadingSpin from "./LoadingSpin.vue";
+import MapDisplay from "./MapDisplay.vue";
 
 import { useMaster } from "../stores/MasterStore";
 import { useBasketStore } from "../stores/BasketStore";
@@ -342,6 +305,7 @@ const router = useRouter();
 const authStore = useAuth();
 
 const areaOptions = ref([]);
+const thanaOptions = ref([]);
 
 const getAreaOptions = () => {
     axios
@@ -353,6 +317,7 @@ const getAreaOptions = () => {
         .then((response) => {
             areaOptions.value = response.data.data.areas;
             guestAddressStore.area_id = response.data.data.areas[0].id;
+            getThanaOptions(guestAddressStore.area_id);
         })
         .catch((error) => {
             toast.error(error.response.data.message, {
@@ -362,6 +327,40 @@ const getAreaOptions = () => {
                         : "bottom-left",
             });
         });
+};
+
+const getThanaOptions = (areaId) => {
+    thanaOptions.value = [];
+
+    if (!areaId) {
+        return;
+    }
+
+    axios
+        .get(`/areas/${areaId}/thanas`, {
+            headers: {
+                Authorization: authStore.token,
+            },
+        })
+        .then((response) => {
+            thanaOptions.value = response.data.data.thanas;
+            if (thanaOptions.value.length > 0) {
+                guestAddressStore.thana_id = thanaOptions.value[0].id;
+            }
+        })
+        .catch((error) => {
+            toast.error(error.response.data.message, {
+                position:
+                    masterStore.langDirection === "rtl"
+                        ? "bottom-right"
+                        : "bottom-left",
+            });
+        });
+};
+
+const onAreaChange = () => {
+    guestAddressStore.thana_id = "";
+    getThanaOptions(guestAddressStore.area_id);
 };
 
 const setCurrentLocation = () => {
@@ -381,16 +380,20 @@ const setCurrentLocation = () => {
     );
 };
 
+const updateLocation = (coords) => {
+    guestAddressStore.latitude = coords.lat;
+    guestAddressStore.longitude = coords.lng;
+};
+
 onMounted(() => {
     getAreaOptions();
     setCurrentLocation();
 });
 
 watch(
-    () => guestAddressStore.area_id,
+    () => guestAddressStore.thana_id,
     () => {
-        console.log(guestAddressStore.area_id);
-        basketStore.fetchCheckoutProducts(null, guestAddressStore.area_id);
+        basketStore.fetchCheckoutProducts(null, guestAddressStore.area_id, guestAddressStore.thana_id);
     },
 );
 </script>

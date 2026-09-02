@@ -23,8 +23,7 @@
 
                 <div class="text-slate-700 dark:text-slate-300 text-base font-normal leading-normal">
                     {{ (basketStore.address.flat_no ? basketStore.address.flat_no + ', ' : '') + basketStore.address.address_line + ', ' +
-                (basketStore.address.address_line2 ? basketStore.address.address_line2 + ', ' : '') }} {{ basketStore.address.area + '-' +
-                    basketStore.address.post_code }}
+                (basketStore.address.address_line2 ? basketStore.address.address_line2 + ', ' : '') }} {{ basketStore.address.thana }}{{ basketStore.address.area ? ', ' + basketStore.address.area : '' }}{{ basketStore.address.post_code ? '-' + basketStore.address.post_code : '' }}
                 </div>
             </div>
 

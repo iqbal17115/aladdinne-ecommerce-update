@@ -245,11 +245,15 @@ class SteadFastService
      */
     private function formatAddress(Address $address)
     {
+        $thana = $address->thana?->name ?? '';
         $area = $address->getArea?->name ?? $address->area ?? '';
 
         $fullAddress = $address->address_line;
         if ($address->address_line2) {
             $fullAddress .= ', '.$address->address_line2;
+        }
+        if ($thana) {
+            $fullAddress .= ', '.$thana;
         }
         if ($area) {
             $fullAddress .= ', '.$area;

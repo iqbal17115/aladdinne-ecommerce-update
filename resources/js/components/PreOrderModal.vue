@@ -220,7 +220,7 @@
                                                         </div>
                                                         <div class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{{ address.phone }}</div>
                                                         <div class="text-slate-500 dark:text-slate-400 text-xs truncate">
-                                                            {{ (address.flat_no ? address.flat_no + ', ' : '') + address.address_line + (address.area ? ', ' + address.area : '') }}
+                                                            {{ (address.flat_no ? address.flat_no + ', ' : '') + address.address_line + (address.thana ? ', ' + address.thana : '') + (address.area ? ', ' + address.area : '') }}
                                                         </div>
                                                     </div>
                                                 </label>

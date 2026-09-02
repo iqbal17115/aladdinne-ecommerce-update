@@ -58,7 +58,7 @@
                 </div>
                 <div class="text-slate-400 text-sm font-normal leading-normal truncate">
                     {{ (basketStore.address?.flat_no ? basketStore.address?.flat_no + ', ' : '') + basketStore.address?.address_line + ', ' +
-                (basketStore.address?.address_line2 ? basketStore.address?.address_line2 + ', ' : '') }} {{ basketStore.address?.area }}
+                (basketStore.address?.address_line2 ? basketStore.address?.address_line2 + ', ' : '') }} {{ basketStore.address?.thana }}{{ basketStore.address?.area ? ', ' + basketStore.address?.area : '' }}
                 </div>
             </div>
         </div>

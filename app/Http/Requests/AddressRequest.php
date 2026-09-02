@@ -2,9 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Models\VerifyManage;
+use App\Models\Thana;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Cache;
 
 class AddressRequest extends FormRequest
 {
@@ -23,13 +22,6 @@ class AddressRequest extends FormRequest
      */
     public function rules(): array
     {
-        $verifyManage = Cache::rememberForever('verify_manage', function () {
-            return VerifyManage::first();
-        });
-
-        $min = $verifyManage?->phone_min_length ?? 9;
-        $max = $verifyManage?->phone_max_length ?? 16;
-
         $tokens = cartAccessToken(request());
         $email = 'nullable';
         if (!$tokens['is_auth']) {
@@ -37,7 +29,7 @@ class AddressRequest extends FormRequest
         }
         return [
             'name' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[a-zA-Z\s\.\'-]+$/', 'not_regex:/^\s*$/'],
-            'phone' => ['required', 'digits_between:' . $min . ',' . $max],
+            'phone' => ['required', 'regex:/^01[3-9]\d{8}$/'],
             'area' => 'nullable|string|max:255',
             'flat_no' => 'nullable|string|max:255',
             'post_code' => 'nullable|string|max:255',
@@ -49,7 +41,25 @@ class AddressRequest extends FormRequest
             'latitude' => 'required|numeric|between:-90,90',
             'email' => [$email, 'email:rfc,dns', 'max:150'],
             'area_id' => 'required|exists:areas,id',
+            'thana_id' => 'required|exists:thanas,id',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if (! $this->area_id || ! $this->thana_id) {
+                return;
+            }
+
+            $belongs = Thana::where('id', $this->thana_id)
+                ->where('area_id', $this->area_id)
+                ->exists();
+
+            if (! $belongs) {
+                $validator->errors()->add('thana_id', __('The selected thana does not belong to the selected area.'));
+            }
+        });
     }
 
     public function messages(): array

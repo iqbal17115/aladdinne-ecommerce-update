@@ -96,6 +96,41 @@
                                             </div>
                                             <div>
                                                 <label
+                                                    for="email"
+                                                    class="form-label mb-2"
+                                                >
+                                                    {{ $t("Email") }}
+                                                    <span class="text-slate-400 text-sm">({{ $t('Optional') }})</span>
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    id="email"
+                                                    v-model="formData.email"
+                                                    :placeholder="
+                                                        $t('Enter email')
+                                                    "
+                                                    class="form-input"
+                                                    :class="
+                                                        errors && errors?.email
+                                                            ? 'border-red-500'
+                                                            : 'border-slate-200 dark:border-slate-600'
+                                                    "
+                                                />
+                                                <span
+                                                    v-if="
+                                                        errors && errors?.email
+                                                    "
+                                                    class="text-red-500 text-sm"
+                                                    >{{ errors?.email[0] }}</span
+                                                >
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6"
+                                        >
+                                            <div>
+                                                <label
                                                     for="Phone"
                                                     class="form-label mb-2"
                                                 >
@@ -110,7 +145,6 @@
                                                     :placeholder="
                                                         $t('Enter phone')
                                                     "
-                                                    value="0123456789"
                                                     class="form-input"
                                                     v-model="formData.phone"
                                                     :class="
@@ -118,9 +152,7 @@
                                                             ? 'border-red-500'
                                                             : 'border-slate-200 dark:border-slate-600'
                                                     "
-                                                    :maxlength="
-                                                        masterStore.phoneMaxLength
-                                                    "
+                                                    maxlength="11"
                                                     @input="
                                                         formData.phone =
                                                             formData.phone.replace(
@@ -141,111 +173,16 @@
                                             </div>
                                         </div>
 
-                                        <!-- <div
-                                            class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6"
-                                        >
-                                            <div>
-                                                <label
-                                                    for="Area"
-                                                    class="form-label mb-2"
-                                                >
-                                                    {{ $t("Area") }}</label
-                                                >
-                                                <input
-                                                    type="text"
-                                                    id="Area"
-                                                    :placeholder="
-                                                        $t('Enter Area')
-                                                    "
-                                                    class="form-input"
-                                                    v-model="formData.area"
-                                                    :class="
-                                                        errors && errors?.area
-                                                            ? 'border-red-500'
-                                                            : 'border-slate-200 dark:border-slate-600'
-                                                    "
-                                                />
-                                                <span
-                                                    v-if="
-                                                        errors && errors?.area
-                                                    "
-                                                    class="text-red-500 text-sm"
-                                                    >{{ errors?.area[0] }}</span
-                                                >
+                                        <div class="mt-6">
+                                            <div
+                                                class="text-slate-950 dark:text-white text-base font-medium leading-normal mb-2"
+                                            >
+                                                {{ $t("Pin Your Location") }}
                                             </div>
-                                            <div>
-                                                <label
-                                                    for="Flat"
-                                                    class="form-label mb-2"
-                                                >
-                                                    {{ $t("Flat") }}</label
-                                                >
-                                                <input
-                                                    type="text"
-                                                    id="Flat"
-                                                    :placeholder="
-                                                        $t('Enter Flat no')
-                                                    "
-                                                    value=""
-                                                    class="form-input"
-                                                    v-model="formData.flat_no"
-                                                    :class="
-                                                        errors &&
-                                                        errors?.flat_no
-                                                            ? 'border-red-500'
-                                                            : 'border-slate-200 dark:border-slate-600'
-                                                    "
-                                                />
-                                                <span
-                                                    v-if="
-                                                        errors &&
-                                                        errors?.flat_no
-                                                    "
-                                                    class="text-red-500 text-sm"
-                                                    >{{
-                                                        errors?.flat_no[0]
-                                                    }}</span
-                                                >
-                                            </div>
-
-                                            <div>
-                                                <label
-                                                    for="Postal"
-                                                    class="form-label mb-2"
-                                                >
-                                                    {{ $t("Postal Code") }}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id="Postal"
-                                                    v-model="formData.post_code"
-                                                    :placeholder="
-                                                        $t('Enter Postal Code')
-                                                    "
-                                                    value=""
-                                                    class="form-input"
-                                                    :class="
-                                                        errors &&
-                                                        errors?.post_code
-                                                            ? 'border-red-500'
-                                                            : 'border-slate-200 dark:border-slate-600'
-                                                    "
-                                                />
-                                                <span
-                                                    v-if="
-                                                        errors &&
-                                                        errors?.post_code
-                                                    "
-                                                    class="text-red-500 text-sm"
-                                                    >{{
-                                                        errors?.post_code[0]
-                                                    }}</span
-                                                >
-                                            </div>
-                                        </div> -->
-
-                                        <div class="mt-6 hidden">
-                                            <!-- Map removed from checkout -->
+                                            <MapDisplay
+                                                :enableSetLocation="true"
+                                                @location-updated="updateLocation"
+                                            />
                                         </div>
 
                                         <div
@@ -261,6 +198,7 @@
                                                 <select
                                                     id="Area"
                                                     v-model="formData.area_id"
+                                                    @change="onAreaChange"
                                                     :class="[
                                                         'form-input',
                                                         errors && errors?.area
@@ -294,6 +232,47 @@
                                                 >
                                             </div>
 
+                                            <div>
+                                                <label
+                                                    for="Thana"
+                                                    class="form-label mb-2"
+                                                >
+                                                    {{ $t("Thana") }}
+                                                    <small class="text-red-500">*</small>
+                                                </label>
+                                                <select
+                                                    id="Thana"
+                                                    v-model="formData.thana_id"
+                                                    :disabled="!formData.area_id"
+                                                    :class="[
+                                                        'form-input',
+                                                        errors && errors?.thana_id
+                                                            ? 'border-red-500'
+                                                            : 'border-slate-200',
+                                                    ]"
+                                                >
+                                                    <option value="" disabled selected>
+                                                        {{ $t("Select Thana") }}
+                                                    </option>
+                                                    <option
+                                                        v-for="thana in thanaOptions"
+                                                        :key="thana.id"
+                                                        :value="thana.id"
+                                                    >
+                                                        {{ thana.name }}
+                                                    </option>
+                                                </select>
+                                                <span
+                                                    v-if="errors && errors?.thana_id"
+                                                    class="text-red-500 text-sm"
+                                                    >{{ errors?.thana_id[0] }}</span
+                                                >
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6"
+                                        >
                                             <div>
                                                 <label
                                                     for="address"
@@ -332,14 +311,6 @@
                                                     }}</span
                                                 >
                                             </div>
-                                            <!-- <div>
-                                                <label for="address2" class="form-label mb-2"> {{ $t('Address Line 2') }}</label>
-                                                <input type="text" id="address2" v-model="formData.address_line2"
-                                                    :placeholder="$t('Enter address 2')" value="" class="form-input"
-                                                    :class="errors && errors?.address_line2 ? 'border-red-500' : 'border-slate-200'" />
-                                                <span v-if="errors && errors?.address_line2"
-                                                    class="text-red-500 text-sm">{{ errors?.address_line2[0] }}</span>
-                                            </div> -->
                                         </div>
 
                                         <div class="mt-5">
@@ -493,15 +464,18 @@ import { onMounted, ref } from "vue";
 import { useAuth } from "../stores/AuthStore";
 import { useToast } from "vue-toastification";
 import { useMaster } from "../stores/MasterStore";
+import MapDisplay from "./MapDisplay.vue";
 
 const masterStore = useMaster();
 const toast = useToast();
 const authStore = useAuth();
 
-const formData = ref({
+const defaultFormData = () => ({
     name: "",
+    email: "",
     phone: "",
     area_id: "",
+    thana_id: "",
     flat_no: "",
     post_code: "",
     address_line: "",
@@ -512,9 +486,12 @@ const formData = ref({
     is_default: false,
 });
 
+const formData = ref(defaultFormData());
+
 const errors = ref({});
 
 const areaOptions = ref([]);
+const thanaOptions = ref([]);
 
 const addressFormSubmit = () => {
     axios
@@ -530,19 +507,8 @@ const addressFormSubmit = () => {
                         ? "bottom-right"
                         : "bottom-left",
             });
-            formData.value = {
-                name: "",
-                phone: "",
-                area_id: "",
-                flat_no: "",
-                post_code: "",
-                address_line: "",
-                address_line2: "",
-                address_type: "home",
-                latitude: "",
-                longitude: "",
-                is_default: false,
-            };
+            formData.value = defaultFormData();
+            thanaOptions.value = [];
             authStore.fetchAddresses();
             authStore.showAddressModal = false;
             authStore.showChangeAddressModal = true;
@@ -578,6 +544,37 @@ const getAreaOptions = () => {
         });
 };
 
+const getThanaOptions = (areaId) => {
+    thanaOptions.value = [];
+
+    if (!areaId) {
+        return;
+    }
+
+    axios
+        .get(`/areas/${areaId}/thanas`, {
+            headers: {
+                Authorization: authStore.token,
+            },
+        })
+        .then((response) => {
+            thanaOptions.value = response.data.data.thanas;
+        })
+        .catch((error) => {
+            toast.error(error.response.data.message, {
+                position:
+                    masterStore.langDirection === "rtl"
+                        ? "bottom-right"
+                        : "bottom-left",
+            });
+        });
+};
+
+const onAreaChange = () => {
+    formData.value.thana_id = "";
+    getThanaOptions(formData.value.area_id);
+};
+
 const setCurrentLocation = () => {
     if (!navigator.geolocation) {
         return;
@@ -593,6 +590,11 @@ const setCurrentLocation = () => {
             formData.value.longitude = 0;
         }
     );
+};
+
+const updateLocation = (coords) => {
+    formData.value.latitude = coords.lat;
+    formData.value.longitude = coords.lng;
 };
 
 onMounted(() => {

@@ -42,4 +42,18 @@ class Address extends Model
     {
         return $this->getArea->delivery_amount ?? 0;
     }
+
+    public function thana(): BelongsTo
+    {
+        return $this->belongsTo(Thana::class);
+    }
+
+    /**
+     * Shipping charge for this address: the selected Thana's own rate when
+     * one is set, otherwise falls back to the Area's flat delivery amount.
+     */
+    public function shippingCharge()
+    {
+        return $this->thana?->shipping_charge ?? $this->deliveryAmount();
+    }
 }
