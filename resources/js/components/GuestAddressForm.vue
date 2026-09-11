@@ -425,7 +425,7 @@ onMounted(() => {
 watch(
     () => guestAddressStore.area_id,
     (newAreaId, oldAreaId) => {
-        basketStore.fetchCheckoutProducts(null, guestAddressStore.area_id);
+        basketStore.fetchCheckoutProducts(null, newAreaId);
         if (oldAreaId) {
             guestAddressStore.thana_id = null;
         }

@@ -479,6 +479,13 @@ watch(
     }
 );
 
+watch(
+    () => guestAddressStore.area_id,
+    () => {
+        fetchBuyNowCartCheckout();
+    }
+);
+
 // The quantity stepper on the buy-now line changes the totals.
 watch(
     () => basketStore.buyNowRefreshKey,
@@ -499,6 +506,7 @@ const fetchBuyNowCartCheckout = () => {
                 is_buy_now: true,
                 coupon_code: coupon.value,
                 address_id: basketStore.address ? basketStore.address.id : null ,
+                area_id: guestAddressStore.area_id,
                 ...locationData,
             },
             {

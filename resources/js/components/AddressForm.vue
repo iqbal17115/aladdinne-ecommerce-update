@@ -263,8 +263,10 @@ import ToastSuccessMessage from "./ToastSuccessMessage.vue";
 import LoadingSpin from "./LoadingSpin.vue";
 
 import { useMaster } from "../stores/MasterStore";
+import { useBasketStore } from "../stores/BasketStore";
 import localization from "../localization";
 const masterStore = useMaster();
+const basketStore = useBasketStore();
 
 const t = localization.i18n.global.t;
 const toast = useToast();
@@ -407,6 +409,7 @@ onMounted(() => {
 watch(
     () => formData.value.area_id,
     (newAreaId, oldAreaId) => {
+        basketStore.fetchCheckoutProducts(null, newAreaId);
         if (oldAreaId) {
             formData.value.thana_id = "";
         }
