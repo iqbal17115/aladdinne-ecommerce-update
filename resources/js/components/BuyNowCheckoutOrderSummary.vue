@@ -481,7 +481,10 @@ watch(
 
 watch(
     () => guestAddressStore.area_id,
-    () => {
+    (newAreaId, oldAreaId) => {
+        if (newAreaId !== oldAreaId) {
+            guestAddressStore.thana_id = null;
+        }
         fetchBuyNowCartCheckout();
     }
 );

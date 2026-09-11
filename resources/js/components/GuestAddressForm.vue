@@ -394,6 +394,9 @@ const getThanaOptions = (areaId) => {
         .get("/thanas", { params: { area_id: areaId } })
         .then((response) => {
             thanaOptions.value = response.data.data.thanas;
+            if (!thanaOptions.value.some((thana) => thana.id === guestAddressStore.thana_id)) {
+                guestAddressStore.thana_id = null;
+            }
         })
         .catch(() => {
             thanaOptions.value = [];
