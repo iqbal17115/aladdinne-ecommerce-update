@@ -58,17 +58,10 @@
                 </div>
             </div>
 
-            <div class="mt-6">
-                <MapDisplay
-                    :enableSetLocation="true"
-                    @location-updated="updateLocation"
-                />
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
                 <div>
                     <label for="Area" class="form-label mb-2">
-                        {{ $t("Area") }}</label
+                        {{ $t("District / Area") }}</label
                     >
                     <select
                         id="Area"
@@ -82,7 +75,7 @@
                     >
                         <!-- Placeholder option (disabled so user must pick another option) -->
                         <option value="" disabled selected>
-                            {{ $t("Enter Area") }}
+                            {{ $t("Select District / Area") }}
                         </option>
 
                         <!-- Options -->
@@ -95,6 +88,26 @@
                         class="text-red-500 text-sm"
                         >{{ errors?.area[0] }}</span
                     >
+                </div>
+
+                <div>
+                    <label for="Thana" class="form-label mb-2">
+                        {{ $t("Thana") }}</label
+                    >
+                    <select
+                        id="Thana"
+                        v-model="formData.thana_id"
+                        class="form-input border-slate-200 dark:border-slate-600"
+                        :disabled="!thanaOptions.length"
+                    >
+                        <option value="">
+                            {{ $t("Select Thana (optional)") }}
+                        </option>
+
+                        <option v-for="thana in thanaOptions" :value="thana.id">
+                            {{ thana.name }}
+                        </option>
+                    </select>
                 </div>
 
                 <div>
@@ -242,7 +255,7 @@
 
 <script setup>
 import axios from "axios";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 import { useAuth } from "../stores/AuthStore";
@@ -250,7 +263,6 @@ import ToastSuccessMessage from "./ToastSuccessMessage.vue";
 import LoadingSpin from "./LoadingSpin.vue";
 
 import { useMaster } from "../stores/MasterStore";
-import MapDisplay from "./MapDisplay.vue";
 import localization from "../localization";
 const masterStore = useMaster();
 
@@ -264,6 +276,7 @@ const formData = ref({
     name: "",
     phone: "",
     area_id: "",
+    thana_id: "",
     flat_no: "",
     post_code: "",
     address_line: "",
@@ -277,6 +290,7 @@ const formData = ref({
 const errors = ref({});
 
 const areaOptions = ref([]);
+const thanaOptions = ref([]);
 
 const content = {
     component: ToastSuccessMessage,
@@ -353,14 +367,52 @@ const getAreaOptions = () => {
         });
 };
 
-const updateLocation = (coords) => {
-    formData.value.latitude = coords.lat;
-    formData.value.longitude = coords.lng;
+const getThanaOptions = (areaId) => {
+    if (!areaId) {
+        thanaOptions.value = [];
+        return;
+    }
+    axios
+        .get("/thanas", { params: { area_id: areaId } })
+        .then((response) => {
+            thanaOptions.value = response.data.data.thanas;
+        })
+        .catch(() => {
+            thanaOptions.value = [];
+        });
+};
+
+const setCurrentLocation = () => {
+    if (!navigator.geolocation) {
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            formData.value.latitude = position.coords.latitude;
+            formData.value.longitude = position.coords.longitude;
+        },
+        () => {
+            formData.value.latitude = 0;
+            formData.value.longitude = 0;
+        }
+    );
 };
 
 onMounted(() => {
     getAreaOptions();
+    setCurrentLocation();
 });
+
+watch(
+    () => formData.value.area_id,
+    (newAreaId, oldAreaId) => {
+        if (oldAreaId) {
+            formData.value.thana_id = "";
+        }
+        getThanaOptions(newAreaId);
+    }
+);
 </script>
 
 <style scoped>

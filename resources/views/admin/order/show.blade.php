@@ -284,8 +284,12 @@
                     <span class="fw-medium">{{ $order->address?->address_type }}</span>
                 </div>
                 <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12 shipping-row">
-                    <span class="text-color">{{ __('Area') }}: </span>
+                    <span class="text-color">{{ __('District / Area') }}: </span>
                     <span class="fw-medium">{{ $order->order_area ?? 'N/A' }}</span>
+                </div>
+                <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12 shipping-row">
+                    <span class="text-color">{{ __('Thana') }}: </span>
+                    <span class="fw-medium">{{ $order->order_thana ?? 'N/A' }}</span>
                 </div>
                 <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12 shipping-row">
                     <span class="text-color">{{ __('Address Line') }}: </span>
@@ -375,7 +379,7 @@
                                 </div>
                                 <div class="steadfast-summary-row">
                                     <span class="text-color">{{ __('Address') }}</span>
-                                    <span class="fw-medium text-end">{{ $order->address?->address_line }}{{ $order->order_area ? ', '.$order->order_area : '' }}</span>
+                                    <span class="fw-medium text-end">{{ $order->address?->address_line }}{{ $order->order_thana ? ', '.$order->order_thana : '' }}{{ $order->order_area ? ', '.$order->order_area : '' }}</span>
                                 </div>
                                 <div class="steadfast-summary-row">
                                     <span class="text-color">{{ __('COD Amount') }}</span>

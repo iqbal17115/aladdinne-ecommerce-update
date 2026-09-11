@@ -249,14 +249,14 @@
                                         </div>
 
                                         <div
-                                            class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6"
+                                            class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6"
                                         >
                                             <div>
                                                 <label
                                                     for="Area"
                                                     class="form-label mb-2"
                                                 >
-                                                    {{ $t("Area") }}</label
+                                                    {{ $t("District / Area") }}</label
                                                 >
                                                 <select
                                                     id="Area"
@@ -274,7 +274,7 @@
                                                         disabled
                                                         selected
                                                     >
-                                                        {{ $t("Enter Area") }}
+                                                        {{ $t("Select District / Area") }}
                                                     </option>
 
                                                     <!-- Options -->
@@ -292,6 +292,32 @@
                                                     class="text-red-500 text-sm"
                                                     >{{ errors?.area[0] }}</span
                                                 >
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    for="Thana"
+                                                    class="form-label mb-2"
+                                                >
+                                                    {{ $t("Thana") }}</label
+                                                >
+                                                <select
+                                                    id="Thana"
+                                                    v-model="formData.thana_id"
+                                                    class="form-input border-slate-200"
+                                                    :disabled="!thanaOptions.length"
+                                                >
+                                                    <option value="">
+                                                        {{ $t("Select Thana (optional)") }}
+                                                    </option>
+
+                                                    <option
+                                                        v-for="thana in thanaOptions"
+                                                        :value="thana.id"
+                                                    >
+                                                        {{ thana.name }}
+                                                    </option>
+                                                </select>
                                             </div>
 
                                             <div>
@@ -488,7 +514,7 @@ import {
     TransitionRoot,
 } from "@headlessui/vue";
 import { XMarkIcon } from "@heroicons/vue/24/solid";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 
 import { useAuth } from "../stores/AuthStore";
 import { useToast } from "vue-toastification";
@@ -502,6 +528,7 @@ const formData = ref({
     name: "",
     phone: "",
     area_id: "",
+    thana_id: "",
     flat_no: "",
     post_code: "",
     address_line: "",
@@ -515,6 +542,7 @@ const formData = ref({
 const errors = ref({});
 
 const areaOptions = ref([]);
+const thanaOptions = ref([]);
 
 const addressFormSubmit = () => {
     axios
@@ -534,6 +562,7 @@ const addressFormSubmit = () => {
                 name: "",
                 phone: "",
                 area_id: "",
+                thana_id: "",
                 flat_no: "",
                 post_code: "",
                 address_line: "",
@@ -578,6 +607,21 @@ const getAreaOptions = () => {
         });
 };
 
+const getThanaOptions = (areaId) => {
+    if (!areaId) {
+        thanaOptions.value = [];
+        return;
+    }
+    axios
+        .get("/thanas", { params: { area_id: areaId } })
+        .then((response) => {
+            thanaOptions.value = response.data.data.thanas;
+        })
+        .catch(() => {
+            thanaOptions.value = [];
+        });
+};
+
 const setCurrentLocation = () => {
     if (!navigator.geolocation) {
         return;
@@ -599,6 +643,16 @@ onMounted(() => {
     getAreaOptions();
     setCurrentLocation();
 });
+
+watch(
+    () => formData.value.area_id,
+    (newAreaId, oldAreaId) => {
+        if (oldAreaId) {
+            formData.value.thana_id = "";
+        }
+        getThanaOptions(newAreaId);
+    }
+);
 </script>
 
 <style scoped>

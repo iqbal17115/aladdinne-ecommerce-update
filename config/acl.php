@@ -34,6 +34,7 @@ return [
             'page' => ['index', 'create', 'edit', 'show', 'destroy', 'generate.AI.data'],
             'country' => ['index', 'create', 'edit', 'destroy'],
             'area' => ['index', 'create', 'edit', 'destroy', 'toggle'],
+            'thana' => ['index', 'create', 'edit', 'destroy', 'toggle'],
             'currency' => ['index', 'create', 'edit', 'toggle', 'destroy'],
             'themeColor' => ['index', 'update', 'change'],
             'deliveryCharge' => ['index', 'create', 'edit', 'destroy'],

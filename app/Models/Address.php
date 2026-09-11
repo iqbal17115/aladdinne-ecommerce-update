@@ -38,6 +38,10 @@ class Address extends Model
         return $this->hasOne(Area::class, 'id', 'area_id');
     }
 
+    public function getThana(){
+        return $this->hasOne(Thana::class, 'id', 'thana_id');
+    }
+
     public function deliveryAmount()
     {
         return $this->getArea->delivery_amount ?? 0;

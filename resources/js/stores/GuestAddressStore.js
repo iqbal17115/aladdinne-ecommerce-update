@@ -7,6 +7,7 @@ export const useGuestAddress = defineStore("guestAddress", {
         email: null,
         phone: null,
         area_id: null,
+        thana_id: null,
         address_line: null,
         address_type: "home",
         latitude: null,
@@ -34,6 +35,7 @@ export const useGuestAddress = defineStore("guestAddress", {
             this.email = null;
             this.phone = null;
             this.area_id = null;
+            this.thana_id = null;
             this.address_line = null;
             this.latitude = null;
             this.longitude = null;

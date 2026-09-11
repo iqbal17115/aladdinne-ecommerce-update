@@ -231,7 +231,8 @@ class OrderRepository extends Repository
             'address_id' => $request->address_id,
             'instruction' => $request->note,
             'payment_status' => PaymentStatus::PENDING->value,
-            'order_area' => $address->getArea->name ?? null
+            'order_area' => $address->getArea->name ?? null,
+            'order_thana' => $address->getThana->name ?? null,
         ]);
 
         $generalSetting = generaleSetting('setting');
