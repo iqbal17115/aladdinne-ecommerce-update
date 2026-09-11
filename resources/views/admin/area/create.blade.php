@@ -3,7 +3,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-body">
-                <h4>{{ __('Add New Area') }}</h4>
+                <h4>{{ __('Add New District / Area') }}</h4>
                 <form action="{{ route('admin.area.store') }}" method="POST">
                     @csrf
 

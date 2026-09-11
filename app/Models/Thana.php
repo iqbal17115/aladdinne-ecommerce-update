@@ -5,8 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Area extends Model
+class Thana extends Model
 {
     use HasFactory;
 
@@ -17,13 +18,13 @@ class Area extends Model
         return $builder->where('is_active', true);
     }
 
-    public function getAddresses()
+    public function area(): BelongsTo
     {
-        return $this->hasMany(Address::class, 'area_id');
+        return $this->belongsTo(Area::class);
     }
 
-    public function getThanas()
+    public function getAddresses()
     {
-        return $this->hasMany(Thana::class, 'area_id');
+        return $this->hasMany(Address::class, 'thana_id');
     }
 }

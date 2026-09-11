@@ -3,7 +3,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-body">
-                <h4>{{ __('Update Area') }}</h4>
+                <h4>{{ __('Update District / Area') }}</h4>
                 <form action="{{ route('admin.area.update', $area->id) }}" method="POST">
                     @csrf
                     @method('PUT')

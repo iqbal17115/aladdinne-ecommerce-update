@@ -212,7 +212,8 @@ class CartRepository extends Repository
         $vatTaxesArray = [];
         $tokens = cartAccessToken(request());
 
-        $shop = Shop::find($request->shop_ids[0]);
+        $shopId = $request->input('shop_ids.0');
+        $shop = $shopId ? Shop::find($shopId) : null;
         $address = Address::find($request->address_id);
 
         $deliveryLatitude = $address->latitude ?? $request->latitude;

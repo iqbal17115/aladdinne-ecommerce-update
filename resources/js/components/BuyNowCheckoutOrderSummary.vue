@@ -479,6 +479,16 @@ watch(
     }
 );
 
+watch(
+    () => guestAddressStore.area_id,
+    (newAreaId, oldAreaId) => {
+        if (newAreaId !== oldAreaId) {
+            guestAddressStore.thana_id = null;
+        }
+        fetchBuyNowCartCheckout();
+    }
+);
+
 // The quantity stepper on the buy-now line changes the totals.
 watch(
     () => basketStore.buyNowRefreshKey,
@@ -499,6 +509,7 @@ const fetchBuyNowCartCheckout = () => {
                 is_buy_now: true,
                 coupon_code: coupon.value,
                 address_id: basketStore.address ? basketStore.address.id : null ,
+                area_id: guestAddressStore.area_id,
                 ...locationData,
             },
             {
@@ -694,6 +705,7 @@ const processGuestOrderConfirm = async () => {
                     email: guestAddressStore.email,
                     phone: guestAddressStore.phone,
                     area_id: guestAddressStore.area_id,
+                    thana_id: guestAddressStore.thana_id,
                     address_line: guestAddressStore.address_line,
                     address_type: guestAddressStore.address_type,
                     latitude: guestAddressStore.latitude,

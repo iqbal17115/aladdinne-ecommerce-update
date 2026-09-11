@@ -2,7 +2,7 @@
 @section('content')
     <div class="d-flex align-items-center flex-wrap gap-3 justify-content-between px-3">
         <h4>
-            {{ __('Area List') }}
+            {{ __('District / Area List') }}
         </h4>
     </div>
 
@@ -21,7 +21,7 @@
                     </div>
                     <a href="{{ route('admin.area.create') }}" class="btn py-2 btn-primary">
                         <i class="fa fa-plus-circle"></i>
-                        {{ __('Add Area') }}
+                        {{ __('Add District / Area') }}
                     </a>
                 </form>
 
@@ -109,7 +109,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
-                            {{ __('Add New Area') }}
+                            {{ __('Add New District / Area') }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -147,7 +147,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
-                            {{ __('Update Area') }}
+                            {{ __('Update District / Area') }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>

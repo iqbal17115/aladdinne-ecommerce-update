@@ -177,10 +177,10 @@
                 </div>
             </div> -->
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
                 <div>
                     <label for="Area" class="form-label mb-2">
-                        {{ $t("Area") }}</label
+                        {{ $t("District / Area") }}</label
                     >
                     <select
                         id="Area"
@@ -195,7 +195,7 @@
                     >
                         <!-- Placeholder option (disabled so user must pick another option) -->
                         <option value="" disabled selected>
-                            {{ $t("Enter Area") }}
+                            {{ $t("Select District / Area") }}
                         </option>
 
                         <!-- Options -->
@@ -211,6 +211,26 @@
                         class="text-red-500 text-sm"
                         >{{ guestAddressStore.errors?.area[0] }}</span
                     >
+                </div>
+
+                <div>
+                    <label for="Thana" class="form-label mb-2">
+                        {{ $t("Thana") }}</label
+                    >
+                    <select
+                        id="Thana"
+                        v-model="guestAddressStore.thana_id"
+                        class="form-input border-slate-200 dark:border-slate-600"
+                        :disabled="!thanaOptions.length"
+                    >
+                        <option value="">
+                            {{ $t("Select Thana (optional)") }}
+                        </option>
+
+                        <option v-for="thana in thanaOptions" :value="thana.id">
+                            {{ thana.name }}
+                        </option>
+                    </select>
                 </div>
 
                 <div>
@@ -342,6 +362,7 @@ const router = useRouter();
 const authStore = useAuth();
 
 const areaOptions = ref([]);
+const thanaOptions = ref([]);
 
 const getAreaOptions = () => {
     axios
@@ -361,6 +382,24 @@ const getAreaOptions = () => {
                         ? "bottom-right"
                         : "bottom-left",
             });
+        });
+};
+
+const getThanaOptions = (areaId) => {
+    if (!areaId) {
+        thanaOptions.value = [];
+        return;
+    }
+    axios
+        .get("/thanas", { params: { area_id: areaId } })
+        .then((response) => {
+            thanaOptions.value = response.data.data.thanas;
+            if (!thanaOptions.value.some((thana) => thana.id === guestAddressStore.thana_id)) {
+                guestAddressStore.thana_id = null;
+            }
+        })
+        .catch(() => {
+            thanaOptions.value = [];
         });
 };
 
@@ -388,9 +427,12 @@ onMounted(() => {
 
 watch(
     () => guestAddressStore.area_id,
-    () => {
-        console.log(guestAddressStore.area_id);
-        basketStore.fetchCheckoutProducts(null, guestAddressStore.area_id);
+    (newAreaId, oldAreaId) => {
+        basketStore.fetchCheckoutProducts(null, newAreaId);
+        if (oldAreaId) {
+            guestAddressStore.thana_id = null;
+        }
+        getThanaOptions(newAreaId);
     },
 );
 </script>

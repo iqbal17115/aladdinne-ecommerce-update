@@ -18,6 +18,7 @@ const toast = useToast();
  * store state (it is per-visit, not something worth persisting).
  */
 let checkoutTracked = false;
+let checkoutRequestId = 0;
 
 /** Flatten the shop-grouped checkout payload into a plain product list. */
 const flattenCheckoutProducts = (checkoutProducts) =>
@@ -447,6 +448,7 @@ export const useBasketStore = defineStore("basketStore", {
             const authStore = useAuth();
             const masterStore = useMaster();
             const guestAddressStore = useGuestAddress();
+            const requestId = ++checkoutRequestId;
             if (authStore.token || authStore.access_token) {
                 const locationData = guestAddressStore.latitude && guestAddressStore.longitude
                     ? { latitude: guestAddressStore.latitude, longitude: guestAddressStore.longitude }
@@ -462,6 +464,10 @@ export const useBasketStore = defineStore("basketStore", {
                         'X-Guest-Token': authStore.access_token
                     },
                 }).then((response) => {
+                    if (requestId !== checkoutRequestId) {
+                        return;
+                    }
+
                     this.checkoutProducts = response.data.data.checkout_items;
                     this.total_amount = response.data.data.checkout.total_amount;
                     this.delivery_charge = response.data.data.checkout.delivery_charge;
