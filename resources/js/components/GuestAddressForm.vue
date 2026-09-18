@@ -32,7 +32,6 @@
                 <div>
                     <label for="email" class="form-label mb-2">
                         {{ $t("Email") }}
-                        <small class="text-red-500">*</small>
                     </label>
                     <input
                         type="email"

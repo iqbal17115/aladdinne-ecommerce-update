@@ -576,14 +576,15 @@ const processGuestOrderConfirm = async () => {
                     currency_id: master.selectedCurrency.id,
                     shop_ids: basketStore.selectedShopIds,
                     name: guestAddressStore.name,
-                    email: guestAddressStore.email,
+                    ...(guestAddressStore.email ? { email: guestAddressStore.email } : {}),
                     phone: guestAddressStore.phone,
                     area_id: guestAddressStore.area_id,
                     thana_id: guestAddressStore.thana_id,
                     address_line: guestAddressStore.address_line,
                     address_type: guestAddressStore.address_type,
-                    latitude: guestAddressStore.latitude,
-                    longitude: guestAddressStore.longitude,
+                    ...(guestAddressStore.latitude !== null && guestAddressStore.longitude !== null
+                        ? { latitude: guestAddressStore.latitude, longitude: guestAddressStore.longitude }
+                        : {}),
                     payment_method: paymentMethod.value,
                     coupon_code: coupon.value,
                     note: props.note,
