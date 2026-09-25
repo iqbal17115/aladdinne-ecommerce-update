@@ -57,7 +57,7 @@ class PreOrderDeliveryRepository
         if ($settings?->is_weight_charge && $product->product_weight > 0) {
             $totalWeight = $product->product_weight * $quantity;
             if ($totalWeight > 0) {
-                $weightCharge = getWeightDeliveryCharge($totalWeight);
+                $weightCharge = getWeightDeliveryCharge($totalWeight, $resolvedAreaId);
             }
         }
 

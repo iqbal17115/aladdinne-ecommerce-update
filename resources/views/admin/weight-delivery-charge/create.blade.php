@@ -15,10 +15,19 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
+                                <label class="form-label">{{ __('Area') }}</label>
+                                <select name="area_id" class="form-select">
+                                    <option value="">{{ __('Global / All Areas') }}</option>
+                                    @foreach ($areas as $area)
+                                        <option value="{{ $area->id }}">{{ $area->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6">
                                 <x-input label="Minimum Weight (kg)" name="min_weight" type="text"
                                     placeholder="Enter Minimum Order Weight" onlyNumber required="true" />
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 mt-3">
                                 <x-input label="Maximum Weight (kg)" name="max_weight" type="text"
                                     placeholder="Enter Maximum Order Weight" onlyNumber required="true" />
                             </div>

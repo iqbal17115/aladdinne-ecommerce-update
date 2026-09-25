@@ -20,6 +20,7 @@
                         <thead>
                             <tr>
                                 <th>{{ __('SL') }}</th>
+                                <th class="text-center">{{ __('Area') }}</th>
                                 <th class="text-center">{{ __('Min. Weight') }} (kg)</th>
                                 <th class="text-center">{{ __('Max. Weight') }} (kg)</th>
                                 <th class="text-center">{{ __('Charge') }}</th>
@@ -29,6 +30,7 @@
                         @forelse($deliveryCharges as $deliveryCharge)
                             <tr>
                                 <td>{{ $loop->iteration }}.</td>
+                                <td class="text-center">{{ $deliveryCharge->area?->name ?? __('Global') }}</td>
                                 <td class="text-center">{{ $deliveryCharge->min_weight }}</td>
                                 <td class="text-center">{{ $deliveryCharge->max_weight }}</td>
                                 <td class="text-center">{{ showCurrency($deliveryCharge->delivery_charge) }}</td>

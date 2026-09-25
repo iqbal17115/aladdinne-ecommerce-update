@@ -315,7 +315,7 @@ class CartRepository extends Repository
                 }
             }
             if ($totalWeight > 0) {
-                $weightCharge = getWeightDeliveryCharge($totalWeight);
+                $weightCharge = getWeightDeliveryCharge($totalWeight, $resolvedAreaId);
             }
         }
 

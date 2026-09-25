@@ -349,13 +349,42 @@ if (! function_exists('userCart')) {
 
 
 if (! function_exists('getWeightDeliveryCharge')) {
-    function getWeightDeliveryCharge($totalWeight): float
+    function getWeightDeliveryCharge($totalWeight, $areaId = null): float
     {
-        $deliveryCharge = \App\Models\WeightDeliveryCharge::where('min_weight', '<=', $totalWeight)
-            ->where('max_weight', '>=', $totalWeight)
+        $query = \App\Models\WeightDeliveryCharge::query()
+            ->where('min_weight', '<=', $totalWeight)
+            ->where('max_weight', '>=', $totalWeight);
+
+        if (! is_null($areaId) && $areaId !== '') {
+            $areaCharge = (clone $query)
+                ->where('area_id', $areaId)
+                ->orderBy('min_weight')
+                ->first();
+
+            if ($areaCharge) {
+                return (float) $areaCharge->delivery_charge;
+            }
+
+            $globalCharge = (clone $query)
+                ->where(function ($q) {
+                    $q->whereNull('area_id')
+                        ->orWhere('area_id', 0);
+                })
+                ->orderBy('min_weight')
+                ->first();
+
+            return (float) ($globalCharge?->delivery_charge ?? 0);
+        }
+
+        $globalCharge = (clone $query)
+            ->where(function ($q) {
+                $q->whereNull('area_id')
+                    ->orWhere('area_id', 0);
+            })
+            ->orderBy('min_weight')
             ->first();
 
-        return $deliveryCharge?->delivery_charge ?? 0;
+        return (float) ($globalCharge?->delivery_charge ?? 0);
     }
 }
 
