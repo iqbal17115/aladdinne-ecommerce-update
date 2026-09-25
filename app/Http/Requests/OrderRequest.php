@@ -38,10 +38,7 @@ class OrderRequest extends FormRequest
             'payment_method' => 'required|string',
             'coupon_code' => 'nullable|string|max:50',
             'area_id' => 'nullable|exists:areas,id',
-            'thana_id' => [
-                'nullable',
-                Rule::exists('thanas', 'id')->where(fn ($query) => $query->where('area_id', $this->area_id)),
-            ],
+            'thana_id' => 'nullable|exists:thanas,id',
             // Location is optional for order placement. Some customers may not
             // grant browser geolocation access, and the order should still be allowed.
             'longitude' => 'nullable|numeric|between:-180,180',

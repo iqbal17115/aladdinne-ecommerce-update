@@ -45,7 +45,7 @@ class AddressRequest extends FormRequest
             'latitude' => 'nullable|numeric|between:-90,90',
             'email' => ['nullable', 'email:rfc,dns', 'max:150'],
             'area_id' => 'required|exists:areas,id',
-            'thana_id' => ['nullable', Rule::exists('thanas', 'id')->where(fn ($query) => $query->where('area_id', $this->area_id))],
+            'thana_id' => 'nullable|exists:thanas,id',
         ];
     }
 
