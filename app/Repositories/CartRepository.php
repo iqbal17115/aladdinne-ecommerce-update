@@ -316,10 +316,9 @@ class CartRepository extends Repository
             }
             if ($totalWeight > 0) {
                 $weightCharge = getWeightDeliveryCharge($totalWeight, $resolvedAreaId);
+                $deliveryCharge = $weightCharge;
             }
         }
-
-        $deliveryCharge += $weightCharge;
 
         // generate array for get discount
         $products = collect([]);

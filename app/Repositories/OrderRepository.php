@@ -343,7 +343,7 @@ class OrderRepository extends Repository
                 }
             }
             if ($totalWeight > 0) {
-                $deliveryCharge += getWeightDeliveryCharge($totalWeight, $resolvedAreaId);
+                $deliveryCharge = getWeightDeliveryCharge($totalWeight, $resolvedAreaId);
             }
         }
 
