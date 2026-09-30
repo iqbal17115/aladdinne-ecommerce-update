@@ -6,6 +6,7 @@ use App\Models\VerifyManage;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class AddressRequest extends FormRequest
 {
@@ -31,6 +32,9 @@ class AddressRequest extends FormRequest
         $min = $verifyManage?->phone_min_length ?? 9;
         $max = $verifyManage?->phone_max_length ?? 16;
 
+        $areaRule = Schema::hasTable('areas') ? 'required|exists:areas,id' : 'nullable';
+        $thanaRule = Schema::hasTable('thanas') ? 'nullable|exists:thanas,id' : 'nullable';
+
         return [
             'name' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[a-zA-Z\s\.\'-]+$/', 'not_regex:/^\s*$/'],
             'phone' => ['required', 'digits_between:' . $min . ',' . $max],
@@ -44,8 +48,8 @@ class AddressRequest extends FormRequest
             'longitude' => 'nullable|numeric|between:-180,180',
             'latitude' => 'nullable|numeric|between:-90,90',
             'email' => ['nullable', 'email:rfc,dns', 'max:150'],
-            'area_id' => 'required|exists:areas,id',
-            'thana_id' => 'nullable|exists:thanas,id',
+            'area_id' => $areaRule,
+            'thana_id' => $thanaRule,
         ];
     }
 

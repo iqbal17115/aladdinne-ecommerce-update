@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\SubscriptionStatus;
 use App\Repositories\ShopRepository;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class OrderRequest extends FormRequest
@@ -30,6 +31,9 @@ class OrderRequest extends FormRequest
             $address='required|exists:addresses,id';
         }
 
+        $areaRule = Schema::hasTable('areas') ? 'nullable|exists:areas,id' : 'nullable';
+        $thanaRule = Schema::hasTable('thanas') ? 'nullable|exists:thanas,id' : 'nullable';
+
         return [
             'shop_ids' => 'required|array',
             'shop_ids.*' => 'required|exists:shops,id',
@@ -37,8 +41,8 @@ class OrderRequest extends FormRequest
             'note' => 'nullable|string',
             'payment_method' => 'required|string',
             'coupon_code' => 'nullable|string|max:50',
-            'area_id' => 'nullable|exists:areas,id',
-            'thana_id' => 'nullable|exists:thanas,id',
+            'area_id' => $areaRule,
+            'thana_id' => $thanaRule,
             // Location is optional for order placement. Some customers may not
             // grant browser geolocation access, and the order should still be allowed.
             'longitude' => 'nullable|numeric|between:-180,180',

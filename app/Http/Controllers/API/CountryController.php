@@ -9,6 +9,7 @@ use App\Repositories\AreaRepository;
 use App\Http\Resources\ThanaResource;
 use App\Repositories\ThanaRepository;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use App\Http\Resources\CountryResource;
 
 class CountryController extends Controller
@@ -34,6 +35,12 @@ class CountryController extends Controller
 
     public function indexThanas()
     {
+        if (! Schema::hasTable('thanas')) {
+            return $this->json('all thanas', [
+                'thanas' => [],
+            ]);
+        }
+
         $areaId = request('area_id');
 
         $thanas = ThanaRepository::query()
