@@ -44,6 +44,7 @@
                                     <th>{{ __('Shop') }}</th>
                                 @endif
                                 <th>{{ __('Total Amount') }}</th>
+                                <th>{{ __('Order Status') }}</th>
                                 <th>{{ __('Payment Method') }}</th>
                                 <th>{{ __('Action') }}</th>
                             </tr>
@@ -64,6 +65,18 @@
                                         {{ showCurrency($order->payable_amount) }}
                                         <br>
                                         <span class="badge rounded-pill text-bg-primary order-payment-badge">{{ $order->payment_status }}</span>
+                                    </td>
+                                    <td class="w-min">
+                                        <span class="badge rounded-pill order-status-badge {{ match ($order->order_status?->value) {
+                                            'Pending' => 'order-status-pending',
+                                            'Confirm' => 'order-status-confirm',
+                                            'Processing' => 'order-status-processing',
+                                            'Pickup' => 'order-status-pickup',
+                                            'On The Way' => 'order-status-on-the-way',
+                                            'Delivered' => 'order-status-delivered',
+                                            'Cancelled' => 'order-status-cancelled',
+                                            default => 'order-status-default',
+                                        } }}">{{ $order->order_status?->value }}</span>
                                     </td>
                                     <td class="w-min order-method-cell">{{ $order->payment_method }}</td>
                                     <td class="w-min order-action-cell">
@@ -149,6 +162,53 @@
         .admin-order-index .order-payment-badge {
             margin-top: 6px;
             display: inline-flex;
+        }
+
+        .admin-order-index .order-status-badge {
+            padding: 0.4rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .admin-order-index .order-status-pending {
+            color: #664d03;
+            background-color: #fff3cd;
+        }
+
+        .admin-order-index .order-status-confirm {
+            color: #055160;
+            background-color: #cff4fc;
+        }
+
+        .admin-order-index .order-status-processing {
+            color: #084298;
+            background-color: #cfe2ff;
+        }
+
+        .admin-order-index .order-status-pickup {
+            color: #41464b;
+            background-color: #e2e3e5;
+        }
+
+        .admin-order-index .order-status-on-the-way {
+            color: #0f6255;
+            background-color: #d1f4ee;
+        }
+
+        .admin-order-index .order-status-delivered {
+            color: #0f5132;
+            background-color: #d1e7dd;
+        }
+
+        .admin-order-index .order-status-cancelled {
+            color: #842029;
+            background-color: #f8d7da;
+        }
+
+        .admin-order-index .order-status-default {
+            color: #41464b;
+            background-color: #e2e3e5;
         }
 
         .admin-order-index .order-action-cell {
