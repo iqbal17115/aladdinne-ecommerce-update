@@ -7,6 +7,9 @@ export const useMaster = defineStore("masterStore", {
         defaultLocale: "en",
         logo: null,
         darkLogo: null,
+        appTitle: typeof document !== "undefined"
+            ? document.querySelector('meta[name="app-title"]')?.content || ""
+            : "",
         currency: {
             symbol: "$",
             position: "prefix",
@@ -103,6 +106,7 @@ export const useMaster = defineStore("masterStore", {
                 this.cashOnDelivery = data.cash_on_delivery;
                 this.onlinePayment = data.online_payment;
                 this.appName = data.app_name;
+                this.appTitle = data.app_title || this.appName;
                 this.playStoreLink = data.google_playstore_link;
                 this.appStoreLink = data.app_store_link;
                 this.multiVendor = data.multi_vendor;

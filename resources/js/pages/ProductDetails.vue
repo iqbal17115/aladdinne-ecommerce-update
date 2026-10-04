@@ -833,8 +833,8 @@ const fetchProductDetails = async () => {
         flashSale.value = response.data.data.product.flash_sale;
 
         setMeta({
-            title: product.value.name,
-            description: product.value.short_description || product.value.name,
+            title: product.value.meta_title || product.value.name,
+            description: product.value.meta_description || product.value.short_description || product.value.name,
             image: product.value.thumbnails?.[0]?.thumbnail || product.value.thumbnails?.[0]?.url,
             type: 'product',
             keywords: product.value.meta_keywords,

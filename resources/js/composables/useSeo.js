@@ -14,9 +14,10 @@ export function useSeo() {
         } = options;
 
         const appName = master.appName || '';
+        const appTitle = master.appTitle || appName;
         const logo = master.logo || '';
 
-        const fullTitle = title ? `${title} - ${appName}` : appName;
+        const fullTitle = title ? `${title} - ${appName}` : appTitle;
         const ogImage = image || logo;
         const rawDesc = description ? description.replace(/<[^>]*>/g, '').trim() : '';
         const desc = rawDesc.length > 160 ? rawDesc.substring(0, 157) + '...' : rawDesc;

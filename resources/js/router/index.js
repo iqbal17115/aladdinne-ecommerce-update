@@ -464,9 +464,10 @@ let hasTrackedInitialPageView = false;
 router.beforeEach((to, from, next) => {
     const master = useMaster();
     const appName = master.appName;
-    const pageTitle = to.meta.title;
+    const isHomePage = to.name === 'home';
+    const pageTitle = isHomePage ? null : to.meta.title;
 
-    document.title = pageTitle ? `${pageTitle} - ${appName}` : appName;
+    document.title = pageTitle ? `${pageTitle} - ${appName}` : (master.appTitle || appName);
 
     // Pages with their own data-driven SEO skip this default
     const dynamicSeoRoutes = ['productDetails', 'blog-details', 'shop-detail'];

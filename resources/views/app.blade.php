@@ -1,10 +1,12 @@
 @php
     $generaleSetting = App\Models\GeneraleSetting::first();
 
-    $title = $generaleSetting?->name ?? config('app.name', 'ReadyEcommerce');
+    $siteName = $generaleSetting?->name ?? config('app.name', 'ReadyEcommerce');
+    $siteTitle = $generaleSetting?->title ?: $siteName;
+    $title = $siteTitle;
     $favicon = $generaleSetting?->favicon ?? asset('assets/favicon.png');
     $logo = $generaleSetting?->logo ?? asset('assets/logo.png');
-    $description = $generaleSetting?->web_footer_description ?? $title;
+    $description = $generaleSetting?->web_footer_description ?? $siteName;
     $siteUrl = url('/');
     $metaPixelId = $generaleSetting?->meta_pixel_id ?: config('services.meta.pixel_id');
     // Tracking stays off until an admin flips the switch, and off on local unless
@@ -19,8 +21,8 @@
         && filled($generaleSetting?->meta_capi_access_token ?: config('services.meta.capi_access_token'));
 
     if (! empty($product)) {
-        $title = $product->name;
-        $description = strip_tags($product->short_description) ?: $title;
+        $title = $product->meta_title ?: $product->name;
+        $description = strip_tags($product->meta_description ?: $product->short_description) ?: $title;
         $logo = $product->thumbnail;
         $siteUrl = url()->current();
     }
@@ -34,6 +36,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="base-url" content="{{ $siteUrl }}">
     <meta name="app-url" content="{{ $siteUrl }}">
+    <meta name="app-title" content="{{ $siteTitle }}">
     <meta name="meta-pixel-id" content="{{ $shouldLoadMetaPixel ? $metaPixelId : '' }}">
     <meta name="meta-capi-enabled" content="{{ $metaCapiEnabled ? '1' : '0' }}">
 
@@ -44,7 +47,7 @@
 
     <!-- Open Graph -->
     <meta property="og:type" content="{{ ! empty($product) ? 'product' : 'website' }}">
-    <meta property="og:site_name" content="{{ $title }}">
+    <meta property="og:site_name" content="{{ $siteName }}">
     <meta property="og:title" content="{{ $title }}">
     <meta property="og:description" content="{{ $description }}">
     <meta property="og:image" content="{{ $logo }}">
