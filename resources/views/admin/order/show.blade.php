@@ -506,20 +506,35 @@
 
                         <div class="mb-3">
                             <label for="order_area" class="form-label">{{ __('District / Area') }}</label>
-                            <input type="text" id="order_area" name="order_area" class="form-control"
-                                value="{{ old('order_area', $order->order_area) }}" maxlength="255">
-                            @error('order_area')
+                            <select id="order_area" name="area_id" class="form-select">
+                                <option value="">{{ __('Choose area') }}</option>
+                                @foreach ($areas as $area)
+                                    <option value="{{ $area->id }}" @selected(old('area_id', $selectedAreaId) == $area->id)>
+                                        {{ $area->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('area_id')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="mb-3">
                             <label for="order_thana" class="form-label">{{ __('Thana') }}</label>
-                            <input type="text" id="order_thana" name="order_thana" class="form-control"
-                                value="{{ old('order_thana', $order->order_thana) }}" maxlength="255">
-                            @error('order_thana')
+                            <select id="order_thana" name="thana_id" class="form-select"
+                                {{ $selectedAreaId ? '' : 'disabled' }}>
+                                <option value="">{{ __('Choose thana') }}</option>
+                                @foreach ($thanas as $thana)
+                                    <option value="{{ $thana->id }}" @selected(old('thana_id', $selectedThanaId) == $thana->id)>
+                                        {{ $thana->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('thana_id')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
+                            <div id="order-thana-load-error" class="text-danger small mt-1"
+                                data-load-error="{{ __('Could not load thanas. Please try again.') }}" hidden></div>
                         </div>
 
                         <div class="mb-3">
@@ -1119,6 +1134,45 @@
             updateNewProductSelection();
         @endif
     </script>
+
+    @hasPermission('admin.order.delivery.update')
+        <script>
+            const orderAreaSelect = document.getElementById('order_area');
+            const orderThanaSelect = document.getElementById('order_thana');
+            const orderThanaLoadError = document.getElementById('order-thana-load-error');
+
+            orderAreaSelect?.addEventListener('change', async () => {
+                const placeholder = orderThanaSelect.options[0]?.textContent || '';
+                orderThanaSelect.replaceChildren(new Option(placeholder, ''));
+                orderThanaSelect.disabled = true;
+                orderThanaLoadError.hidden = true;
+
+                if (!orderAreaSelect.value) {
+                    return;
+                }
+
+                try {
+                    const params = new URLSearchParams({ area_id: orderAreaSelect.value });
+                    const response = await fetch(`/api/thanas?${params}`, {
+                        headers: { Accept: 'application/json' },
+                    });
+                    if (!response.ok) {
+                        throw new Error('Thana request failed');
+                    }
+
+                    const result = await response.json();
+                    const thanas = result?.data?.thanas || [];
+                    thanas.forEach((thana) => {
+                        orderThanaSelect.add(new Option(thana.name, thana.id));
+                    });
+                    orderThanaSelect.disabled = thanas.length === 0;
+                } catch (error) {
+                    orderThanaLoadError.textContent = orderThanaLoadError.dataset.loadError;
+                    orderThanaLoadError.hidden = false;
+                }
+            });
+        </script>
+    @endhasPermission
 
     <script>
         let map;

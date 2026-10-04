@@ -6,10 +6,12 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\Roles;
 use App\Http\Controllers\Controller;
+use App\Models\Area;
 use App\Models\Driver;
 use App\Models\GeneraleSetting;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Thana;
 use App\Models\User;
 use App\Models\CourierTracking;
 use App\Repositories\NotificationRepository;
@@ -52,6 +54,16 @@ class OrderController extends Controller
     {
         $orderStatus = OrderStatus::cases();
         $order->load(['products.sizes', 'products.colors', 'payments']);
+        $areas = Area::isActive()->orderBy('name')->get();
+        $address = $order->address;
+        $matchingArea = $areas->firstWhere('name', $order->order_area);
+        $selectedAreaId = old('area_id', $matchingArea?->id ?? $address?->area_id);
+        $thanas = Thana::isActive()
+            ->when($selectedAreaId, fn ($query) => $query->where('area_id', $selectedAreaId))
+            ->orderBy('name')
+            ->get();
+        $matchingThana = $thanas->firstWhere('name', $order->order_thana);
+        $selectedThanaId = old('thana_id', $matchingThana?->id ?? $address?->thana_id);
         $canEditItems = $order->order_status === OrderStatus::PENDING
             && $order->payment_status === PaymentStatus::PENDING
             && ! $order->payments->contains(fn ($payment) => $payment->is_paid)
@@ -94,7 +106,7 @@ class OrderController extends Controller
 
         $courierTracking = CourierTracking::where('order_id', $order->id)->latest('id')->first();
 
-        return view('admin.order.show', compact('order', 'orderStatus', 'riders', 'courierTracking', 'canEditItems', 'availableProductsData'));
+        return view('admin.order.show', compact('order', 'orderStatus', 'riders', 'courierTracking', 'canEditItems', 'availableProductsData', 'areas', 'thanas', 'selectedAreaId', 'selectedThanaId'));
     }
 
     public function updateItems(Order $order, Request $request, AdminOrderItemService $itemService)
@@ -134,10 +146,35 @@ class OrderController extends Controller
         $validated = $request->validate([
             'order_phone' => ['nullable', 'string', 'max:50'],
             'order_address_line' => ['nullable', 'string', 'max:2000'],
-            'order_area' => ['nullable', 'string', 'max:255'],
-            'order_thana' => ['nullable', 'string', 'max:255'],
+            'area_id' => ['nullable', 'integer', 'exists:areas,id'],
+            'thana_id' => ['nullable', 'integer', 'exists:thanas,id'],
             'internal_note' => ['nullable', 'string', 'max:5000'],
         ]);
+
+        $area = ! empty($validated['area_id'])
+            ? Area::isActive()->find($validated['area_id'])
+            : null;
+        if (! empty($validated['area_id']) && ! $area) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'area_id' => __('Choose an active area.'),
+            ]);
+        }
+
+        $thana = null;
+        if (! empty($validated['thana_id'])) {
+            $thana = Thana::isActive()
+                ->where('area_id', $validated['area_id'] ?? null)
+                ->find($validated['thana_id']);
+            if (! $thana) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'thana_id' => __('Choose a thana within the selected area.'),
+                ]);
+            }
+        }
+
+        unset($validated['area_id'], $validated['thana_id']);
+        $validated['order_area'] = $area?->name;
+        $validated['order_thana'] = $thana?->name;
 
         $order->update($validated);
 
