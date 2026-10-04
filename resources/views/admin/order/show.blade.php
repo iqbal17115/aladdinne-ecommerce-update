@@ -71,6 +71,15 @@
                         </div>
                     </div>
 
+                    @if ($canEditItems)
+                        @hasPermission('admin.order.items.update')
+                            <form id="order-items-form" action="{{ route('admin.order.items.update', $order->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                            </form>
+                        @endhasPermission
+                    @endif
+
                     <div class="table-responsive mt-4 mb-0">
                         <table class="table border-left-right order-products-table">
                             <thead>
@@ -85,6 +94,11 @@
                                     <th>{{ __('Color') }}</th>
                                     <th>{{ __('Price') }}</th>
                                     <th class="text-end">{{ __('Total') }}</th>
+                                    @if ($canEditItems && $order->products->count() > 1)
+                                        @hasPermission('admin.order.items.update')
+                                            <th>{{ __('Remove') }}</th>
+                                        @endhasPermission
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -108,7 +122,20 @@
                                         @if ($businessModel == 'multi')
                                             <td>{{ $product->shop?->name }}</td>
                                         @endif
-                                        <td>{{ $product->pivot->quantity }}</td>
+                                        <td>
+                                            @if ($canEditItems)
+                                                @hasPermission('admin.order.items.update')
+                                                    <input type="number" class="form-control form-control-sm" min="1"
+                                                        name="items[{{ $product->pivot->id }}][quantity]"
+                                                        value="{{ old('items.'.$product->pivot->id.'.quantity', $product->pivot->quantity) }}"
+                                                        form="order-items-form" required aria-label="{{ __('Quantity') }}">
+                                                @else
+                                                    {{ $product->pivot->quantity }}
+                                                @endhasPermission
+                                            @else
+                                                {{ $product->pivot->quantity }}
+                                            @endif
+                                        </td>
                                         <td>{{ $product->pivot->size ?? '-' }}</td>
                                         <td>{{ $product->pivot->color ?? '-' }}</td>
                                         <td>
@@ -125,11 +152,95 @@
                                         <td class="text-end">
                                             {{ showCurrency($product->pivot->quantity * $price) }}
                                         </td>
+                                        @if ($canEditItems && $order->products->count() > 1)
+                                            @hasPermission('admin.order.items.update')
+                                                <td>
+                                                    <label class="form-check d-inline-flex align-items-center gap-2 mb-0">
+                                                        <input type="checkbox" class="form-check-input mt-0"
+                                                            name="items[{{ $product->pivot->id }}][remove]" value="1"
+                                                            form="order-items-form">
+                                                        <span>{{ __('Remove') }}</span>
+                                                    </label>
+                                                </td>
+                                            @endhasPermission
+                                        @endif
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
+
+                    @if ($canEditItems && $availableProductsData->isNotEmpty())
+                        @hasPermission('admin.order.items.update')
+                            <div class="order-add-product-panel border-top mt-3 pt-3">
+                                <h6 class="mb-3">{{ __('Add Product to Order') }}</h6>
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-lg-5">
+                                        <label for="order-add-product" class="form-label">{{ __('Product') }}</label>
+                                        <select id="order-add-product" name="new_item[product_id]" form="order-items-form"
+                                            class="form-select">
+                                            <option value="">{{ __('Choose a product') }}</option>
+                                            @foreach ($availableProductsData as $availableProduct)
+                                                <option value="{{ $availableProduct['id'] }}"
+                                                    @selected(old('new_item.product_id') == $availableProduct['id'])>
+                                                    {{ $availableProduct['name'] }} ({{ __('Stock') }}: {{ $availableProduct['stock'] }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('new_item.product_id')
+                                            <div class="text-danger small mt-1">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-lg-2" id="order-add-size-wrap" hidden>
+                                        <label for="order-add-size" class="form-label">{{ __('Size') }}</label>
+                                        <select id="order-add-size" name="new_item[size_id]" form="order-items-form"
+                                            class="form-select" disabled>
+                                            <option value="">{{ __('Choose size') }}</option>
+                                        </select>
+                                        @error('new_item.size_id')
+                                            <div class="text-danger small mt-1">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-lg-2" id="order-add-color-wrap" hidden>
+                                        <label for="order-add-color" class="form-label">{{ __('Color') }}</label>
+                                        <select id="order-add-color" name="new_item[color_id]" form="order-items-form"
+                                            class="form-select" disabled>
+                                            <option value="">{{ __('Choose color') }}</option>
+                                        </select>
+                                        @error('new_item.color_id')
+                                            <div class="text-danger small mt-1">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-lg-2">
+                                        <label for="order-add-quantity" class="form-label">{{ __('Quantity') }}</label>
+                                        <input id="order-add-quantity" type="number" name="new_item[quantity]"
+                                            form="order-items-form" class="form-control" min="1"
+                                            value="{{ old('new_item.quantity', 1) }}" disabled>
+                                        @error('new_item.quantity')
+                                            <div class="text-danger small mt-1">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-lg-1">
+                                        <div class="small text-muted" id="order-add-product-stock" role="status"></div>
+                                        <div class="small fw-semibold" id="order-add-product-price"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endhasPermission
+                    @endif
+
+                    @if ($canEditItems)
+                        @hasPermission('admin.order.items.update')
+                            @error('items')
+                                <div class="alert alert-danger mt-3 mb-0">{{ $message }}</div>
+                            @enderror
+                            <div class="d-flex justify-content-end mt-3">
+                                <button type="submit" class="btn btn-primary" form="order-items-form">
+                                    {{ __('Save Order Changes') }}
+                                </button>
+                            </div>
+                        @endhasPermission
+                    @endif
 
                     <div class="max-300 ms-auto d-flex flex-column gap-1 order-total-summary">
                         <div class="d-flex align-items-center justify-content-between gap-2">
@@ -144,7 +255,33 @@
 
                         <div class="d-flex align-items-center justify-content-between gap-2">
                             <div>{{ __('Delivery Charge') }}</div>
-                            <div>{{ showCurrency($order->delivery_charge) }}</div>
+                            @if ($canEditItems)
+                                @hasPermission('admin.order.items.update')
+                                    <div class="order-delivery-charge-control">
+                                        @php($currencySetting = generaleSetting('setting'))
+                                        <div class="input-group input-group-sm">
+                                            @if ($currencySetting?->currency_position !== 'suffix')
+                                                <span class="input-group-text">{{ $currencySetting?->currency ?? '$' }}</span>
+                                            @endif
+                                            <input type="number" name="delivery_charge" form="order-items-form"
+                                                class="form-control text-end" min="0" max="10000000"
+                                                step="0.01" required
+                                                value="{{ old('delivery_charge', number_format((float) $order->delivery_charge, 2, '.', '')) }}"
+                                                aria-label="{{ __('Delivery Charge') }}">
+                                            @if ($currencySetting?->currency_position === 'suffix')
+                                                <span class="input-group-text">{{ $currencySetting?->currency ?? '$' }}</span>
+                                            @endif
+                                        </div>
+                                        @error('delivery_charge')
+                                            <div class="text-danger small mt-1">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                @else
+                                    <div>{{ showCurrency($order->delivery_charge) }}</div>
+                                @endhasPermission
+                            @else
+                                <div>{{ showCurrency($order->delivery_charge) }}</div>
+                            @endif
                         </div>
 
                         <div class="d-flex align-items-center justify-content-between gap-2">
@@ -296,6 +433,44 @@
                     <span class="fw-medium">{{ $order->address?->address_line }}</span>
                 </div>
             </div>
+
+            @hasPermission('admin.order.delivery.update')
+                <div class="card mt-3">
+                    <h5 class="fz-18 border-bottom p-3 m-0">{{ __('Edit Delivery Details') }}</h5>
+                    <form action="{{ route('admin.order.delivery.update', $order->id) }}" method="POST" class="p-3">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="mb-3">
+                            <label for="order_area" class="form-label">{{ __('District / Area') }}</label>
+                            <input type="text" id="order_area" name="order_area" class="form-control"
+                                value="{{ old('order_area', $order->order_area) }}" maxlength="255">
+                            @error('order_area')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="order_thana" class="form-label">{{ __('Thana') }}</label>
+                            <input type="text" id="order_thana" name="order_thana" class="form-control"
+                                value="{{ old('order_thana', $order->order_thana) }}" maxlength="255">
+                            @error('order_thana')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="internal_note" class="form-label">{{ __('Internal Note') }}</label>
+                            <textarea id="internal_note" name="internal_note" class="form-control" rows="4" maxlength="5000">{{ old('internal_note', $order->internal_note) }}</textarea>
+                            @error('internal_note')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">{{ __('Save Changes') }}</button>
+                    </form>
+                </div>
+            @endhasPermission
 
         </div>
     </div>
@@ -538,6 +713,11 @@
             width: 100%;
         }
 
+        .admin-order-show .order-delivery-charge-control {
+            flex: 0 0 170px;
+            max-width: 55%;
+        }
+
         .dropdown-menu.order-status {
             min-width: 200px;
             padding: 8px;
@@ -749,6 +929,126 @@
                 });
             });
         });
+    </script>
+
+    <script>
+        @if ($canEditItems && $availableProductsData->isNotEmpty())
+            const availableOrderProducts = @json($availableProductsData->values());
+            const orderProductSelect = document.getElementById('order-add-product');
+            const orderSizeSelect = document.getElementById('order-add-size');
+            const orderColorSelect = document.getElementById('order-add-color');
+            const orderQuantityInput = document.getElementById('order-add-quantity');
+            const orderStockPreview = document.getElementById('order-add-product-stock');
+            const orderPricePreview = document.getElementById('order-add-product-price');
+            const sizeField = document.getElementById('order-add-size-wrap');
+            const colorField = document.getElementById('order-add-color-wrap');
+            const currencySymbol = @json(generaleSetting('setting')?->currency ?? '$');
+            const currencyPosition = @json(generaleSetting('setting')?->currency_position ?? 'prefix');
+            const availableStockLabel = @json(__('Available stock'));
+            const unitPriceLabel = @json(__('Unit price'));
+            const previousProductId = @json(old('new_item.product_id'));
+            const previousSizeId = @json(old('new_item.size_id'));
+            const previousColorId = @json(old('new_item.color_id'));
+            let loadedProductId = null;
+
+            function setVariantOptions(select, wrapper, options, placeholder, previousValue) {
+                select.replaceChildren(new Option(placeholder, ''));
+                options.forEach((option) => {
+                    select.add(new Option(option.name, option.id));
+                });
+                wrapper.hidden = options.length === 0;
+                select.disabled = options.length === 0;
+                select.required = options.length > 0;
+
+                if (previousValue && options.some((option) => String(option.id) === String(previousValue))) {
+                    select.value = String(previousValue);
+                }
+            }
+
+            function selectedProduct() {
+                const product = availableOrderProducts.find((item) => String(item.id) === orderProductSelect.value);
+                return product || null;
+            }
+
+            function updateNewProductSelection() {
+                const product = selectedProduct();
+                if (!product) {
+                    orderSizeSelect.replaceChildren(new Option(@json(__('Choose size')), ''));
+                    orderColorSelect.replaceChildren(new Option(@json(__('Choose color')), ''));
+                    orderSizeSelect.disabled = true;
+                    orderColorSelect.disabled = true;
+                    orderSizeSelect.required = false;
+                    orderColorSelect.required = false;
+                    sizeField.hidden = true;
+                    colorField.hidden = true;
+                    orderQuantityInput.disabled = true;
+                    orderQuantityInput.removeAttribute('max');
+                    orderStockPreview.textContent = '';
+                    orderPricePreview.textContent = '';
+                    loadedProductId = null;
+                    return;
+                }
+
+                if (loadedProductId === String(product.id)) {
+                    updateNewProductPreview();
+                    return;
+                }
+
+                const restorePreviousSelection = loadedProductId === null
+                    && String(product.id) === String(previousProductId);
+                setVariantOptions(
+                    orderSizeSelect,
+                    sizeField,
+                    product.sizes,
+                    @json(__('Choose size')),
+                    restorePreviousSelection ? previousSizeId : null,
+                );
+                setVariantOptions(
+                    orderColorSelect,
+                    colorField,
+                    product.colors,
+                    @json(__('Choose color')),
+                    restorePreviousSelection ? previousColorId : null,
+                );
+                orderQuantityInput.disabled = false;
+                orderQuantityInput.max = product.stock;
+                if (!restorePreviousSelection || !orderQuantityInput.value || Number(orderQuantityInput.value) < 1) {
+                    orderQuantityInput.value = 1;
+                }
+                loadedProductId = String(product.id);
+                updateNewProductPreview();
+            }
+
+            function updateNewProductPreview() {
+                const product = selectedProduct();
+                if (!product) {
+                    return;
+                }
+
+                const quantity = Number(orderQuantityInput.value) || 1;
+                const size = product.sizes.find((item) => String(item.id) === orderSizeSelect.value);
+                const color = product.colors.find((item) => String(item.id) === orderColorSelect.value);
+                const isFlashSalePrice = product.sale_price !== null && product.sale_remaining >= quantity;
+                const basePrice = isFlashSalePrice ? Number(product.sale_price) : Number(product.base_price);
+                const unitPrice = basePrice + Number(size?.price || 0) + Number(color?.price || 0);
+                const formattedPrice = new Intl.NumberFormat(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                }).format(unitPrice);
+                const priceText = currencyPosition === 'suffix'
+                    ? `${formattedPrice}${currencySymbol}`
+                    : `${currencySymbol}${formattedPrice}`;
+
+                orderStockPreview.textContent = `${availableStockLabel}: ${product.stock}${product.unit ? ` ${product.unit}` : ''}`;
+                orderPricePreview.textContent = `${unitPriceLabel}: ${priceText}`;
+            }
+
+            orderProductSelect.addEventListener('change', updateNewProductSelection);
+            orderSizeSelect.addEventListener('change', updateNewProductPreview);
+            orderColorSelect.addEventListener('change', updateNewProductPreview);
+            orderQuantityInput.addEventListener('input', updateNewProductPreview);
+            updateNewProductSelection();
+        @endif
     </script>
 
     <script>

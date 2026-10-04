@@ -153,6 +153,8 @@ Route::name('admin.')->group(function () {
         Route::controller(OrderController::class)->group(function () {
             Route::get('/orders/{status?}', 'index')->name('order.index');
             Route::get('/orders/{order}/show', 'show')->name('order.show');
+            Route::put('/orders/{order}/items', 'updateItems')->name('order.items.update');
+            Route::put('/orders/{order}/delivery-details', 'updateDeliveryDetails')->name('order.delivery.update');
             Route::get('/orders/{order}/status-change', 'statusChange')->name('order.status.change');
             Route::get('/orders/{order}/payment-status-toggle', 'paymentStatusToggle')->name('order.payment.status.toggle');
             Route::post('/orders/{order}/assign-courier', 'assignCourier')->name('order.assign.courier');

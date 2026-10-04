@@ -32,7 +32,7 @@ class Order extends Model
      */
     public function products(): BelongsToMany
     {
-        $pivotColumns = ['quantity', 'color', 'unit', 'size', 'price'];
+        $pivotColumns = ['id', 'quantity', 'color', 'unit', 'size', 'price'];
 
         if (Schema::hasColumn('order_products', 'sku')) {
             $pivotColumns[] = 'sku';
@@ -69,7 +69,7 @@ class Order extends Model
      */
     public function coupon(): BelongsTo
     {
-        return $this->belongsTo(Coupon::class, 'coupon_id')->withTrashed();
+        return $this->belongsTo(Coupon::class, 'coupon_id');
     }
 
     /**

@@ -13,7 +13,7 @@ return [
             'dashboard' => ['index', 'notification'],
             'banner' => ['index', 'create', 'edit', 'toggle', 'destroy'],
             'ad' => ['index', 'create', 'edit', 'toggle', 'destroy'],
-            'order' => ['index', 'show', 'status.change', 'payment.status.toggle', 'assign.rider', 'assign.courier'],
+            'order' => ['index', 'show', 'delivery.update', 'items.update', 'status.change', 'payment.status.toggle', 'assign.rider', 'assign.courier'],
             'metaPixelEvent' => ['index'],
             'courierConfig' => ['index', 'update'],
             'courierTracking' => ['index', 'refreshStatus'],

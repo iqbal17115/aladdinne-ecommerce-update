@@ -9,10 +9,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Driver;
 use App\Models\GeneraleSetting;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use App\Models\CourierTracking;
 use App\Repositories\NotificationRepository;
 use App\Repositories\OrderRepository;
+use App\Services\AdminOrderItemService;
 use App\Services\NotificationServices;
 use App\Services\SteadFastService;
 use Illuminate\Http\Request;
@@ -49,6 +51,42 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $orderStatus = OrderStatus::cases();
+        $order->load(['products', 'payments']);
+        $canEditItems = $order->order_status === OrderStatus::PENDING
+            && $order->payment_status === PaymentStatus::PENDING
+            && ! $order->payments->contains(fn ($payment) => $payment->is_paid)
+            && ! $order->products->contains(fn ($product) => $product->is_digital);
+        $availableProductsData = collect();
+
+        if ($canEditItems) {
+            $availableProductsData = $order->shop->products()
+                ->isActive()
+                ->where('quantity', '>', 0)
+                ->where('is_digital', false)
+                ->with(['sizes', 'colors', 'unit', 'flashSales'])
+                ->orderBy('name')
+                ->get()
+                ->map(fn (Product $product) => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'stock' => (int) $product->quantity,
+                    'base_price' => (float) ($product->discount_price > 0 ? $product->discount_price : $product->price),
+                    'sale_price' => $product->flashSales->first()?->pivot?->price,
+                    'sale_remaining' => max(0, (int) ($product->flashSales->first()?->pivot?->quantity ?? 0)
+                        - (int) ($product->flashSales->first()?->pivot?->sale_quantity ?? 0)),
+                    'unit' => $product->unit?->name,
+                    'sizes' => $product->sizes->map(fn ($size) => [
+                        'id' => $size->id,
+                        'name' => $size->name,
+                        'price' => (float) ($size->pivot->price ?? 0),
+                    ])->values(),
+                    'colors' => $product->colors->map(fn ($color) => [
+                        'id' => $color->id,
+                        'name' => $color->name,
+                        'price' => (float) ($color->pivot->price ?? 0),
+                    ])->values(),
+                ])->values();
+        }
 
         $riders = Driver::whereHas('user', function ($query) {
             return $query->where('is_active', true);
@@ -56,7 +94,50 @@ class OrderController extends Controller
 
         $courierTracking = CourierTracking::where('order_id', $order->id)->latest('id')->first();
 
-        return view('admin.order.show', compact('order', 'orderStatus', 'riders', 'courierTracking'));
+        return view('admin.order.show', compact('order', 'orderStatus', 'riders', 'courierTracking', 'canEditItems', 'availableProductsData'));
+    }
+
+    public function updateItems(Order $order, Request $request, AdminOrderItemService $itemService)
+    {
+        $validated = $request->validate([
+            'items' => ['required', 'array', 'min:1'],
+            'items.*' => ['required', 'array'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'items.*.remove' => ['nullable', 'boolean'],
+            'delivery_charge' => ['required', 'numeric', 'min:0', 'max:10000000'],
+            'new_item' => ['nullable', 'array'],
+            'new_item.product_id' => ['nullable', 'integer'],
+            'new_item.quantity' => ['nullable', 'integer', 'min:1', 'required_with:new_item.product_id'],
+            'new_item.size_id' => ['nullable', 'integer'],
+            'new_item.color_id' => ['nullable', 'integer'],
+        ]);
+
+        $itemService->update(
+            $order,
+            $validated['items'],
+            (float) $validated['delivery_charge'],
+            $validated['new_item'] ?? [],
+        );
+
+        return redirect()->route('admin.order.show', $order)
+            ->with('success', __('Order items updated successfully.'));
+    }
+
+    /**
+     * Update order-specific delivery details and the internal admin note.
+     */
+    public function updateDeliveryDetails(Order $order, Request $request)
+    {
+        $validated = $request->validate([
+            'order_area' => ['nullable', 'string', 'max:255'],
+            'order_thana' => ['nullable', 'string', 'max:255'],
+            'internal_note' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $order->update($validated);
+
+        return redirect()->route('admin.order.show', $order)
+            ->with('success', __('Order delivery details updated successfully.'));
     }
 
     /**
