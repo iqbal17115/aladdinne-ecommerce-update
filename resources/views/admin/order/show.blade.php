@@ -224,7 +224,7 @@
                                     <div class="col-lg-5">
                                         <label for="order-add-product" class="form-label">{{ __('Product') }}</label>
                                         <select id="order-add-product" name="new_item[product_id]" form="order-items-form"
-                                            class="form-select">
+                                            class="form-select select2 order-add-product-select" style="width: 100%">
                                             <option value="">{{ __('Choose a product') }}</option>
                                             @foreach ($availableProductsData as $availableProduct)
                                                 <option value="{{ $availableProduct['id'] }}"
@@ -1012,6 +1012,12 @@
             const previousProductId = @json(old('new_item.product_id'));
             const previousSizeId = @json(old('new_item.size_id'));
             const previousColorId = @json(old('new_item.color_id'));
+
+            $('#order-add-product').select2({
+                width: '100%',
+                placeholder: @json(__('Choose a product')),
+                allowClear: true,
+            });
             let loadedProductId = null;
 
             function setVariantOptions(select, wrapper, options, placeholder, previousValue) {
@@ -1106,7 +1112,7 @@
                 orderPricePreview.textContent = `${unitPriceLabel}: ${priceText}`;
             }
 
-            orderProductSelect.addEventListener('change', updateNewProductSelection);
+            $('#order-add-product').on('change', updateNewProductSelection);
             orderSizeSelect.addEventListener('change', updateNewProductPreview);
             orderColorSelect.addEventListener('change', updateNewProductPreview);
             orderQuantityInput.addEventListener('input', updateNewProductPreview);
