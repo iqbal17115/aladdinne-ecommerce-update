@@ -30,7 +30,9 @@ class RiderOrderDetailsResource extends JsonResource
                 'name' => $this->customer?->user?->name,
                 'phone' => $this->customer?->user?->phone,
                 'profile_photo' => $this->customer?->user?->thumbnail,
-                'address' => $this->address ? AddressResource::make($this->address) : [],
+                'address' => $this->address
+                    ? AddressResource::make($this->type === 'preOrder' ? $this->address : $this->deliveryAddress())
+                    : [],
             ],
             'shop' => [
                 'name' => $this->shop?->name,

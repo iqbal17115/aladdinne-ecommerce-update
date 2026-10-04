@@ -328,8 +328,8 @@
                     @if ($address?->address_type)
                         {{ __($address?->address_type) }}
                     @endif
-                    @if ($address?->address_line)
-                        ,{{ $address->address_line }}
+                    @if ($order->order_address_line ?? $address?->address_line)
+                        ,{{ $order->order_address_line ?? $address?->address_line }}
                     @endif
                     @if ($address?->address_line2)
                         ,{{ $address->address_line2 }}
@@ -345,7 +345,7 @@
                 </div>
                 <div class="text-gray pt-1">
                     {{ __('Phone') }}:
-                    <span class="fw-500 pt-1" style="color:  #000">{{ $user?->phone }}</span>
+                    <span class="fw-500 pt-1" style="color:  #000">{{ $order->order_phone ?? $address?->phone ?? $user?->phone }}</span>
                 </div>
             </div>
 

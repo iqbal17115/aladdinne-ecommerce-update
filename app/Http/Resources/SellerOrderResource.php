@@ -34,7 +34,7 @@ class SellerOrderResource extends JsonResource
                 'name' => $this->customer->user->name,
                 'phone' => $this->customer->user->phone,
                 'profile_photo' => $this->customer->user->thumbnail,
-                'address' => AddressResource::make($this->address),
+                'address' => AddressResource::make($this->deliveryAddress()),
             ],
             'products' => SellerProductResource::collection($this->products),
             'rider' => $this->driverOrder ? OrderRiderResource::make($this->driverOrder) : null,

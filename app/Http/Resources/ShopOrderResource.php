@@ -23,7 +23,7 @@ class ShopOrderResource extends JsonResource
             'delivery_charge' => $this->delivery_charge,
             'payable_amount' => $this->payable_amount,
             'estimated_delivery_time' => (string) $estimatedDelivery,
-            'address' => AddressResource::make($this->order?->address),
+            'address' => AddressResource::make($this->order?->deliveryAddress()),
         ];
     }
 }

@@ -51,7 +51,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $orderStatus = OrderStatus::cases();
-        $order->load(['products', 'payments']);
+        $order->load(['products.sizes', 'products.colors', 'payments']);
         $canEditItems = $order->order_status === OrderStatus::PENDING
             && $order->payment_status === PaymentStatus::PENDING
             && ! $order->payments->contains(fn ($payment) => $payment->is_paid)
@@ -104,6 +104,9 @@ class OrderController extends Controller
             'items.*' => ['required', 'array'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'items.*.remove' => ['nullable', 'boolean'],
+            'items.*.size_id' => ['nullable', 'integer'],
+            'items.*.color_id' => ['nullable', 'integer'],
+            'items.*.price' => ['required', 'numeric', 'min:0', 'max:10000000'],
             'delivery_charge' => ['required', 'numeric', 'min:0', 'max:10000000'],
             'new_item' => ['nullable', 'array'],
             'new_item.product_id' => ['nullable', 'integer'],
@@ -129,6 +132,8 @@ class OrderController extends Controller
     public function updateDeliveryDetails(Order $order, Request $request)
     {
         $validated = $request->validate([
+            'order_phone' => ['nullable', 'string', 'max:50'],
+            'order_address_line' => ['nullable', 'string', 'max:2000'],
             'order_area' => ['nullable', 'string', 'max:255'],
             'order_thana' => ['nullable', 'string', 'max:255'],
             'internal_note' => ['nullable', 'string', 'max:5000'],

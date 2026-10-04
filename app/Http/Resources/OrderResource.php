@@ -31,7 +31,7 @@ class OrderResource extends JsonResource
             'order_status' => $this->order_status->value,
             'created_at' => $this->created_at,
             'placed_at' => $this->created_at->format('d M, Y h:i A'),
-            'address' => AddressResource::make($this->address),
+            'address' => AddressResource::make($this->deliveryAddress()),
             'products' => ProductResource::collection($this->products),
         ];
     }

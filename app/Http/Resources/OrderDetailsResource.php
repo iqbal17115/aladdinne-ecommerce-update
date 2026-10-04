@@ -67,7 +67,7 @@ class OrderDetailsResource extends JsonResource
             'products' => OrderProductResource::collection($this->products),
             'invoice_url' => route('shop.download-invoice', $this->id),
             'payment_receipt_url' => route('shop.payment-slip', $this->id),
-            'address' => AddressResource::make($this->address),
+            'address' => AddressResource::make($this->deliveryAddress()),
             'all_vat_taxes' => $this->vatTaxes,
             'return_order_within_days' => $generaleSetting?->return_order_within_days ?? 3,
             'last_return_date' => $this->created_at

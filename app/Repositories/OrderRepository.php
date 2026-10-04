@@ -78,6 +78,7 @@ class OrderRepository extends Repository
 
                 $flashSale = $product->flashSales?->first();
                 $flashSaleProduct = null;
+                $flashSaleId = null;
                 $quantity = 0;
 
                 $saleQty = $cart->quantity;
@@ -90,6 +91,7 @@ class OrderRepository extends Repository
                     if ($quantity == 0) {
                         $flashSaleProduct = null;
                     } else {
+                        $flashSaleId = $flashSale->id;
                         $price = $flashSaleProduct->pivot->price;
                         $saleQty += $flashSaleProduct->pivot->sale_quantity;
 
@@ -114,6 +116,7 @@ class OrderRepository extends Repository
                     'size' => $size?->name,
                     'unit' => $cart->unit,
                     'price' => $price,
+                    'flash_sale_id' => $flashSaleId,
                     'buying_price' => $product->buyingPrice() ?? 0,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -231,8 +234,10 @@ class OrderRepository extends Repository
             'address_id' => $request->address_id,
             'instruction' => $request->note,
             'payment_status' => PaymentStatus::PENDING->value,
-            'order_area' => $address->getArea->name ?? null,
-            'order_thana' => $address->getThana->name ?? null,
+            'order_area' => $address?->getArea?->name,
+            'order_thana' => $address?->getThana?->name,
+            'order_phone' => $address?->phone,
+            'order_address_line' => $address?->address_line,
         ]);
 
         $generalSetting = generaleSetting('setting');
@@ -413,6 +418,10 @@ class OrderRepository extends Repository
             'payment_method' => $payment->payment_method ?? $order->payment_method,
             'order_status' => OrderStatus::PENDING->value,
             'address_id' => $order->address_id,
+            'order_phone' => $order->order_phone ?? $order->address?->phone,
+            'order_address_line' => $order->order_address_line ?? $order->address?->address_line,
+            'order_area' => $order->order_area,
+            'order_thana' => $order->order_thana,
             'instruction' => $order->instruction,
             'payment_status' => PaymentStatus::PENDING->value,
         ]);
@@ -429,6 +438,7 @@ class OrderRepository extends Repository
                 'size' => $product->pivot->size ?? null,
                 'unit' => $product->pivot->unit ?? null,
                 'price' => $product->pivot->price,
+                'flash_sale_id' => $product->pivot->flash_sale_id ?? null,
             ]);
 
             // digital product license generation

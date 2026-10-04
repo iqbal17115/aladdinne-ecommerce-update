@@ -204,10 +204,10 @@ class SteadFastService
         return [
             'invoice' => $order->order_code,
             'recipient_name' => $address->name ?? trim(($user->name ?? '').' '.($user->last_name ?? '')),
-            'recipient_phone' => $address->phone ?? $user->phone,
+            'recipient_phone' => $order->order_phone ?? $address->phone ?? $user->phone,
             'alternative_phone' => $user->phone ?? '',
             'recipient_email' => '',
-            'recipient_address' => $this->formatAddress($address),
+            'recipient_address' => $this->formatAddress($address, $order->order_address_line, $order->order_area),
             'cod_amount' => (int) round($order->payable_amount ?? $order->total_amount),
             'note' => $order->instruction ?? '',
             'item_description' => $this->getItemDescription($order),
@@ -243,18 +243,18 @@ class SteadFastService
     /**
      * Format complete address
      */
-    private function formatAddress(Address $address)
+    private function formatAddress(?Address $address, ?string $orderAddressLine = null, ?string $orderArea = null)
     {
-        $area = $address->getArea?->name ?? $address->area ?? '';
+        $area = $orderArea ?? $address?->getArea?->name ?? $address?->area ?? '';
 
-        $fullAddress = $address->address_line;
-        if ($address->address_line2) {
+        $fullAddress = $orderAddressLine ?? $address?->address_line ?? '';
+        if ($address?->address_line2) {
             $fullAddress .= ', '.$address->address_line2;
         }
         if ($area) {
             $fullAddress .= ', '.$area;
         }
-        if ($address->post_code) {
+        if ($address?->post_code) {
             $fullAddress .= '-'.$address->post_code;
         }
 

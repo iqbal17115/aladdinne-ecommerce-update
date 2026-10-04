@@ -103,6 +103,12 @@
                             </thead>
                             <tbody>
                                 @foreach ($order->products as $key => $product)
+                                    @php
+                                        $lineId = $product->pivot->id;
+                                        $linePrice = $product->pivot->price ?? ($product->discount_price > 0 ? $product->discount_price : $product->price);
+                                        $selectedSizeId = $product->sizes->firstWhere('name', $product->pivot->size)?->id;
+                                        $selectedColorId = $product->colors->firstWhere('name', $product->pivot->color)?->id;
+                                    @endphp
                                     <tr>
                                         <td>{{ $key + 1 }}</td>
                                         <td>
@@ -136,21 +142,61 @@
                                                 {{ $product->pivot->quantity }}
                                             @endif
                                         </td>
-                                        <td>{{ $product->pivot->size ?? '-' }}</td>
-                                        <td>{{ $product->pivot->color ?? '-' }}</td>
                                         <td>
-                                            @php
-                                                $price =
-                                                    $product->pivot->price > 0
-                                                        ? $product->pivot->price
-                                                        : ($product->discount_price > 0
-                                                            ? $product->discount_price
-                                                            : $product->price);
-                                            @endphp
-                                            {{ showCurrency($price) }}
+                                            @if ($canEditItems && $product->sizes->isNotEmpty())
+                                                @hasPermission('admin.order.items.update')
+                                                    <select name="items[{{ $lineId }}][size_id]" form="order-items-form"
+                                                        class="form-select form-select-sm" required aria-label="{{ __('Size') }}">
+                                                        <option value="">{{ __('Choose size') }}</option>
+                                                        @foreach ($product->sizes as $size)
+                                                            <option value="{{ $size->id }}" @selected(old('items.'.$lineId.'.size_id', $selectedSizeId) == $size->id)>
+                                                                {{ $size->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                @else
+                                                    {{ $product->pivot->size ?? '-' }}
+                                                @endhasPermission
+                                            @else
+                                                {{ $product->pivot->size ?? '-' }}
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($canEditItems && $product->colors->isNotEmpty())
+                                                @hasPermission('admin.order.items.update')
+                                                    <select name="items[{{ $lineId }}][color_id]" form="order-items-form"
+                                                        class="form-select form-select-sm" required aria-label="{{ __('Color') }}">
+                                                        <option value="">{{ __('Choose color') }}</option>
+                                                        @foreach ($product->colors as $color)
+                                                            <option value="{{ $color->id }}" @selected(old('items.'.$lineId.'.color_id', $selectedColorId) == $color->id)>
+                                                                {{ $color->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                @else
+                                                    {{ $product->pivot->color ?? '-' }}
+                                                @endhasPermission
+                                            @else
+                                                {{ $product->pivot->color ?? '-' }}
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($canEditItems)
+                                                @hasPermission('admin.order.items.update')
+                                                    <input type="number" name="items[{{ $lineId }}][price]" form="order-items-form"
+                                                        class="form-control form-control-sm order-line-price" min="0"
+                                                        max="10000000" step="0.01" required
+                                                        value="{{ old('items.'.$lineId.'.price', $linePrice) }}"
+                                                        aria-label="{{ __('Unit price') }}">
+                                                @else
+                                                    {{ showCurrency($linePrice) }}
+                                                @endhasPermission
+                                            @else
+                                                {{ showCurrency($linePrice) }}
+                                            @endif
                                         </td>
                                         <td class="text-end">
-                                            {{ showCurrency($product->pivot->quantity * $price) }}
+                                            {{ showCurrency($product->pivot->quantity * $linePrice) }}
                                         </td>
                                         @if ($canEditItems && $order->products->count() > 1)
                                             @hasPermission('admin.order.items.update')
@@ -414,7 +460,7 @@
                 </div>
                 <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12 shipping-row">
                     <span class="text-color">{{ __('Phone') }}: </span>
-                    <span class="fw-medium">{{ $order->address?->phone }}</span>
+                    <span class="fw-medium">{{ $order->order_phone ?? $order->address?->phone }}</span>
                 </div>
                 <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12 shipping-row">
                     <span class="text-color">{{ __('Address Type') }}: </span>
@@ -430,7 +476,7 @@
                 </div>
                 <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12 shipping-row">
                     <span class="text-color">{{ __('Address Line') }}: </span>
-                    <span class="fw-medium">{{ $order->address?->address_line }}</span>
+                    <span class="fw-medium">{{ $order->order_address_line ?? $order->address?->address_line }}</span>
                 </div>
             </div>
 
@@ -440,6 +486,23 @@
                     <form action="{{ route('admin.order.delivery.update', $order->id) }}" method="POST" class="p-3">
                         @csrf
                         @method('PUT')
+
+                        <div class="mb-3">
+                            <label for="order_phone" class="form-label">{{ __('Phone') }}</label>
+                            <input type="tel" id="order_phone" name="order_phone" class="form-control"
+                                value="{{ old('order_phone', $order->order_phone ?? $order->address?->phone) }}" maxlength="50">
+                            @error('order_phone')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="order_address_line" class="form-label">{{ __('Address Line') }}</label>
+                            <textarea id="order_address_line" name="order_address_line" class="form-control" rows="2" maxlength="2000">{{ old('order_address_line', $order->order_address_line ?? $order->address?->address_line) }}</textarea>
+                            @error('order_address_line')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
 
                         <div class="mb-3">
                             <label for="order_area" class="form-label">{{ __('District / Area') }}</label>

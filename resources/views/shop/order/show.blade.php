@@ -232,7 +232,7 @@
                 </div>
                 <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12">
                     <span class="text-color">{{ __('Phone') }}: </span>
-                    <span class="fw-medium">{{ $order->address?->phone }}</span>
+                    <span class="fw-medium">{{ $order->order_phone ?? $order->address?->phone }}</span>
                 </div>
                 <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12">
                     <span class="text-color">{{ __('Address Type') }}: </span>
@@ -248,7 +248,7 @@
                 </div>
                 <div class="border-bottom d-flex align-items-center justify-content-between gap-2 px-3 py-12">
                     <span class="text-color">{{ __('Address Line') }}: </span>
-                    <span class="fw-medium">{{ $order->address?->address_line }}</span>
+                    <span class="fw-medium">{{ $order->order_address_line ?? $order->address?->address_line }}</span>
                 </div>
             </div>
 

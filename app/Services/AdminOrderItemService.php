@@ -44,11 +44,21 @@ class AdminOrderItemService
             }
 
             $productIds = $lines->pluck('product_id')->unique();
-            $products = Product::withoutGlobalScopes()->whereIn('id', $productIds)->lockForUpdate()->get()->keyBy('id');
+            $products = Product::withoutGlobalScopes()
+                ->with(['sizes', 'colors'])
+                ->whereIn('id', $productIds)
+                ->lockForUpdate()
+                ->get();
             if ($products->count() !== $productIds->count() || $products->contains(fn ($product) => $product->is_digital)) {
                 throw ValidationException::withMessages([
                     'items' => __('Orders containing digital products cannot be edited here.'),
                 ]);
+            }
+
+            /** @var array<int, Product> $productsById */
+            $productsById = [];
+            foreach ($products as $product) {
+                $productsById[(int) $product->id] = $product;
             }
 
             $changes = [];
@@ -56,24 +66,60 @@ class AdminOrderItemService
                 $lineInput = $items[$line->id];
                 $remove = filter_var($lineInput['remove'] ?? false, FILTER_VALIDATE_BOOLEAN);
                 $quantity = $remove ? 0 : (int) $lineInput['quantity'];
+                $product = $productsById[$line->product_id];
 
-                if ($quantity > 0 && $line->price === null) {
-                    throw ValidationException::withMessages([
-                        'items' => __('An item is missing its saved price and cannot be safely recalculated.'),
-                    ]);
+                $sizeName = $line->size;
+                if (array_key_exists('size_id', $lineInput)) {
+                    $sizeId = $lineInput['size_id'];
+                    $size = $sizeId !== null && $sizeId !== ''
+                        ? $product->sizes->firstWhere('id', (int) $sizeId)
+                        : null;
+                    if ($sizeId !== null && $sizeId !== '' && ! $size) {
+                        throw ValidationException::withMessages([
+                            'items.'.$line->id.'.size_id' => __('Choose a valid size for :product.', ['product' => $product->name]),
+                        ]);
+                    }
+                    $sizeName = $size?->name;
                 }
 
-                $changes[$line->id] = $quantity;
+                $colorName = $line->color;
+                if (array_key_exists('color_id', $lineInput)) {
+                    $colorId = $lineInput['color_id'];
+                    $color = $colorId !== null && $colorId !== ''
+                        ? $product->colors->firstWhere('id', (int) $colorId)
+                        : null;
+                    if ($colorId !== null && $colorId !== '' && ! $color) {
+                        throw ValidationException::withMessages([
+                            'items.'.$line->id.'.color_id' => __('Choose a valid color for :product.', ['product' => $product->name]),
+                        ]);
+                    }
+                    $colorName = $color?->name;
+                }
+
+                $changes[$line->id] = [
+                    'quantity' => $quantity,
+                    'size' => $sizeName,
+                    'color' => $colorName,
+                    'price' => round((float) $lineInput['price'], 2),
+                    'flash_sale_id' => $this->resolveFlashSaleId($product, $line),
+                ];
             }
 
             $finalLines = [];
             $finalQuantityByProduct = [];
 
             foreach ($lines as $line) {
-                $product = $products[$line->product_id];
+                $product = $productsById[$line->product_id];
                 $oldQuantity = (int) $line->quantity;
-                $newQuantity = $changes[$line->id];
+                $change = $changes[$line->id];
+                $newQuantity = $change['quantity'];
                 $delta = $newQuantity - $oldQuantity;
+
+                if ($delta !== 0 && $line->price === null && $product->flashSales()->exists()) {
+                    throw ValidationException::withMessages([
+                        'items' => __('The flash-sale status for :product cannot be determined safely.', ['product' => $product->name]),
+                    ]);
+                }
 
                 if ($delta > 0 && (int) $product->quantity < $delta) {
                     throw ValidationException::withMessages([
@@ -84,22 +130,32 @@ class AdminOrderItemService
                 if ($delta !== 0) {
                     $product->quantity = (int) $product->quantity - $delta;
                     $product->save();
-                    $this->adjustFlashSaleQuantity($product, $line, $delta);
+                    $this->adjustFlashSaleQuantity($product, $change['flash_sale_id'], $delta);
+                }
 
-                    if ($newQuantity === 0) {
-                        DB::table('order_products')->where('id', $line->id)->delete();
-                    } else {
-                        DB::table('order_products')->where('id', $line->id)->update([
-                            'quantity' => $newQuantity,
-                            'updated_at' => now(),
-                        ]);
-                    }
+                if ($newQuantity === 0) {
+                    DB::table('order_products')->where('id', $line->id)->delete();
+                } elseif (
+                    $delta !== 0
+                    || $change['size'] !== $line->size
+                    || $change['color'] !== $line->color
+                    || $change['price'] !== round((float) $line->price, 2)
+                    || (int) ($change['flash_sale_id'] ?? 0) !== (int) ($line->flash_sale_id ?? 0)
+                ) {
+                    DB::table('order_products')->where('id', $line->id)->update([
+                        'quantity' => $newQuantity,
+                        'size' => $change['size'],
+                        'color' => $change['color'],
+                        'price' => $change['price'],
+                        'flash_sale_id' => $change['flash_sale_id'],
+                        'updated_at' => now(),
+                    ]);
                 }
 
                 if ($newQuantity > 0) {
                     $finalLines[] = [
                         'product' => $product,
-                        'price' => (float) $line->price,
+                        'price' => $change['price'],
                         'quantity' => $newQuantity,
                     ];
                     $finalQuantityByProduct[$line->product_id] = ($finalQuantityByProduct[$line->product_id] ?? 0) + $newQuantity;
@@ -201,8 +257,8 @@ class AdminOrderItemService
         $product->quantity = (int) $product->quantity - $quantity;
         $product->save();
 
-        $flashSalePrice = $this->reserveFlashSaleQuantity($product, $quantity);
-        $unitPrice = $flashSalePrice ?? (float) ($product->discount_price > 0 ? $product->discount_price : $product->price);
+        $flashSale = $this->reserveFlashSaleQuantity($product, $quantity);
+        $unitPrice = $flashSale['price'] ?? (float) ($product->discount_price > 0 ? $product->discount_price : $product->price);
         $unitPrice += (float) ($size?->pivot?->price ?? 0) + (float) ($color?->pivot?->price ?? 0);
         $unitPrice = round($unitPrice, 2);
 
@@ -212,6 +268,7 @@ class AdminOrderItemService
             'size' => $size?->name,
             'unit' => $product->unit?->name,
             'price' => $unitPrice,
+            'flash_sale_id' => $flashSale['id'] ?? null,
             'buying_price' => $product->buyingPrice() ?? 0,
             'created_at' => now(),
             'updated_at' => now(),
@@ -220,11 +277,12 @@ class AdminOrderItemService
         return [
             'product' => $product,
             'price' => $unitPrice,
+            'flash_sale_id' => $flashSale['id'] ?? null,
             'quantity' => $quantity,
         ];
     }
 
-    private function reserveFlashSaleQuantity(Product $product, int $quantity): ?float
+    private function reserveFlashSaleQuantity(Product $product, int $quantity): ?array
     {
         $flashSale = $product->flashSales()->first();
         if (! $flashSale) {
@@ -246,14 +304,21 @@ class AdminOrderItemService
             ->where('product_id', $product->id)
             ->update(['sale_quantity' => (int) $flashSaleProduct->sale_quantity + $quantity]);
 
-        return (float) $flashSaleProduct->price;
+        return [
+            'id' => (int) $flashSale->id,
+            'price' => (float) $flashSaleProduct->price,
+        ];
     }
 
-    private function adjustFlashSaleQuantity(Product $product, object $line, int $delta): void
+    private function resolveFlashSaleId(Product $product, object $line): ?int
     {
+        if (! empty($line->flash_sale_id)) {
+            return (int) $line->flash_sale_id;
+        }
+
         $flashSale = $product->flashSales()->first();
         if (! $flashSale || $line->price === null) {
-            return;
+            return null;
         }
 
         $sizePrice = $product->sizes()
@@ -270,7 +335,7 @@ class AdminOrderItemService
                 + (float) $colorPrice;
 
             if (round((float) $line->price, 2) === round($regularPrice, 2)) {
-                return;
+                return null;
             }
 
             throw ValidationException::withMessages([
@@ -278,8 +343,17 @@ class AdminOrderItemService
             ]);
         }
 
+        return (int) $flashSale->id;
+    }
+
+    private function adjustFlashSaleQuantity(Product $product, ?int $flashSaleId, int $delta): void
+    {
+        if (! $flashSaleId) {
+            return;
+        }
+
         $saleProduct = DB::table('flash_sale_products')
-            ->where('flash_sale_id', $flashSale->id)
+            ->where('flash_sale_id', $flashSaleId)
             ->where('product_id', $product->id)
             ->lockForUpdate()
             ->first();
@@ -301,7 +375,7 @@ class AdminOrderItemService
         }
 
         DB::table('flash_sale_products')
-            ->where('flash_sale_id', $flashSale->id)
+            ->where('flash_sale_id', $flashSaleId)
             ->where('product_id', $product->id)
             ->update(['sale_quantity' => $newSaleQuantity]);
     }

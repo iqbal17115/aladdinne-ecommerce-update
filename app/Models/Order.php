@@ -32,7 +32,7 @@ class Order extends Model
      */
     public function products(): BelongsToMany
     {
-        $pivotColumns = ['id', 'quantity', 'color', 'unit', 'size', 'price'];
+        $pivotColumns = ['id', 'quantity', 'color', 'unit', 'size', 'price', 'flash_sale_id'];
 
         if (Schema::hasColumn('order_products', 'sku')) {
             $pivotColumns[] = 'sku';
@@ -78,6 +78,20 @@ class Order extends Model
     public function address(): BelongsTo
     {
         return $this->belongsTo(Address::class, 'address_id');
+    }
+
+    public function deliveryAddress(): ?Address
+    {
+        $address = $this->address;
+        if (! $address) {
+            return null;
+        }
+
+        $deliveryAddress = clone $address;
+        $deliveryAddress->phone = $this->order_phone ?? $address->phone;
+        $deliveryAddress->address_line = $this->order_address_line ?? $address->address_line;
+
+        return $deliveryAddress;
     }
 
     /**

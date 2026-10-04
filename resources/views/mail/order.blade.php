@@ -128,7 +128,7 @@
                                             <tr>
                                                 <td
                                                     style="width: 100%; font-size: 14px; line-height: 18px; color: #666666;">
-                                                    {{ $order->address?->address_line }}
+                                                    {{ $order->order_address_line ?? $order->address?->address_line }}
                                                 </td>
                                             </tr>
                                             <tr>

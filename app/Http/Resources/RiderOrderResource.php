@@ -31,7 +31,9 @@ class RiderOrderResource extends JsonResource
             'user' => [
                 'name'  => $order->customer?->user?->name,
                 'phone' => $order->customer?->user?->phone,
-                'address' => $order->address ? AddressResource::make($order->address) : [],
+                'address' => $order->address
+                    ? AddressResource::make($isNormalOrder ? $order->deliveryAddress() : $order->address)
+                    : [],
             ],
             'shop' => [
                 'name'      => $order->shop?->name,
