@@ -301,18 +301,18 @@
 
                         <div class="d-flex align-items-center justify-content-between gap-2">
                             <div>{{ __('Delivery Charge') }}</div>
-                            <div class="d-flex align-items-center gap-2">
+                            <div class="delivery-charge-control d-flex align-items-center gap-2">
                                 <input
                                     type="number"
                                     name="delivery_charge"
                                     value="{{ old('delivery_charge', $order->delivery_charge) }}"
                                     min="0"
                                     step="0.01"
-                                    class="form-control form-control-sm w-auto"
+                                    class="form-control form-control-sm delivery-charge-input"
                                     form="order-items-form"
                                     aria-label="{{ __('Delivery charge') }}"
                                 >
-                                <label class="form-check-label mb-0">
+                                <label class="form-check-label delivery-charge-manual mb-0">
                                     <input
                                         type="checkbox"
                                         name="delivery_charge_manual"
@@ -787,9 +787,28 @@
             width: 100%;
         }
 
-        .admin-order-show .order-delivery-charge-control {
-            flex: 0 0 170px;
-            max-width: 55%;
+        .admin-order-show .delivery-charge-control {
+            flex: 0 1 180px;
+            min-width: 0;
+        }
+
+        .admin-order-show .delivery-charge-input {
+            width: 92px;
+            min-width: 0;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        .admin-order-show .delivery-charge-manual {
+            white-space: nowrap;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 575.98px) {
+            .admin-order-show .delivery-charge-control {
+                flex-basis: 100%;
+                justify-content: flex-end;
+            }
         }
 
         .dropdown-menu.order-status {
