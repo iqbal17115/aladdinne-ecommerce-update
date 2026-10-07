@@ -301,33 +301,7 @@
 
                         <div class="d-flex align-items-center justify-content-between gap-2">
                             <div>{{ __('Delivery Charge') }}</div>
-                            @if ($canEditItems)
-                                @hasPermission('admin.order.items.update')
-                                    <div class="order-delivery-charge-control">
-                                        @php($currencySetting = generaleSetting('setting'))
-                                        <div class="input-group input-group-sm">
-                                            @if ($currencySetting?->currency_position !== 'suffix')
-                                                <span class="input-group-text">{{ $currencySetting?->currency ?? '$' }}</span>
-                                            @endif
-                                            <input type="number" name="delivery_charge" form="order-items-form"
-                                                class="form-control text-end" min="0" max="10000000"
-                                                step="0.01" required
-                                                value="{{ old('delivery_charge', number_format((float) $order->delivery_charge, 2, '.', '')) }}"
-                                                aria-label="{{ __('Delivery Charge') }}">
-                                            @if ($currencySetting?->currency_position === 'suffix')
-                                                <span class="input-group-text">{{ $currencySetting?->currency ?? '$' }}</span>
-                                            @endif
-                                        </div>
-                                        @error('delivery_charge')
-                                            <div class="text-danger small mt-1">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                @else
-                                    <div>{{ showCurrency($order->delivery_charge) }}</div>
-                                @endhasPermission
-                            @else
-                                <div>{{ showCurrency($order->delivery_charge) }}</div>
-                            @endif
+                            <div>{{ showCurrency($order->delivery_charge) }}</div>
                         </div>
 
                         <div class="d-flex align-items-center justify-content-between gap-2">

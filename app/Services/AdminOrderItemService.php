@@ -5,16 +5,18 @@ namespace App\Services;
 use App\Enums\DiscountType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Models\Area;
 use App\Models\Order;
 use App\Models\Product;
+use App\Repositories\OrderRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class AdminOrderItemService
 {
-    public function update(Order $order, array $items, float $requestedDeliveryCharge, array $newItem = []): void
+    public function update(Order $order, array $items, array $newItem = []): void
     {
-        DB::transaction(function () use ($order, $items, $requestedDeliveryCharge, $newItem) {
+        DB::transaction(function () use ($order, $items, $newItem) {
             $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
 
             if ($order->order_status !== OrderStatus::PENDING || $order->payment_status !== PaymentStatus::PENDING) {
@@ -182,7 +184,22 @@ class AdminOrderItemService
                 $subtotal += $line['price'] * $line['quantity'];
             }
             $subtotal = round($subtotal, 2);
-            $deliveryCharge = round($requestedDeliveryCharge, 2);
+
+            $areaId = $order->address?->area_id;
+            if (! $areaId && $order->order_area) {
+                $areaId = Area::where('name', $order->order_area)->value('id');
+            }
+            $deliveryAddress = $order->deliveryAddress();
+            $deliveryCharge = OrderRepository::calculateDeliveryCharge(
+                $order->shop,
+                collect($finalLines)->map(fn (array $line) => [
+                    'product' => $line['product'],
+                    'quantity' => $line['quantity'],
+                ]),
+                $areaId ? (int) $areaId : null,
+                $deliveryAddress?->latitude ? (float) $deliveryAddress->latitude : null,
+                $deliveryAddress?->longitude ? (float) $deliveryAddress->longitude : null,
+            );
 
             $taxAmount = 0;
             foreach ($order->vatTaxes()->lockForUpdate()->get() as $tax) {

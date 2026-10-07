@@ -264,6 +264,62 @@ class OrderRepository extends Repository
         return $address->deliveryAmount();
     }
 
+    public static function calculateDeliveryCharge(
+        Shop $shop,
+        $items,
+        ?int $areaId = null,
+        ?float $latitude = null,
+        ?float $longitude = null,
+    ): float {
+        $settings = GeneraleSetting::first();
+        $resolvedAreaId = self::resolveDeliveryAreaId(
+            $latitude,
+            $longitude,
+            $areaId,
+        );
+        $deliveryCharge = 0;
+
+        if ($resolvedAreaId && $settings?->is_delivery_free !== true) {
+            $area = Area::find($resolvedAreaId);
+            $deliveryCharge = (float) ($area?->delivery_amount ?? 0);
+
+            if (
+                $shop->latitude !== null
+                && $shop->longitude !== null
+                && $latitude !== null
+                && $longitude !== null
+            ) {
+                $distanceDuration = self::orderDistanceDuration(
+                    (float) $shop->latitude,
+                    (float) $shop->longitude,
+                    $latitude,
+                    $longitude,
+                );
+                $deliveryCharge = self::calculateDeliveryPrice(
+                    $distanceDuration['distanceKm'],
+                    $distanceDuration['durationMin'],
+                    $resolvedAreaId,
+                );
+            }
+        }
+
+        if ($settings?->is_weight_charge) {
+            $totalWeight = 0;
+            foreach ($items as $item) {
+                $product = $item['product'] ?? $item->product ?? null;
+                $quantity = (int) ($item['quantity'] ?? $item->quantity ?? 0);
+                if ($product && (float) ($product->product_weight ?? 0) > 0) {
+                    $totalWeight += (float) $product->product_weight * $quantity;
+                }
+            }
+            if ($totalWeight > 0) {
+                $deliveryCharge = getWeightDeliveryCharge($totalWeight, $resolvedAreaId);
+            }
+        }
+
+        return round($deliveryCharge, 2);
+    }
+
     private static function getCartWiseAmounts(Shop $shop, $carts, $couponCode = null): array
     {
         $totalAmount = 0;
@@ -343,8 +399,8 @@ class OrderRepository extends Repository
             $totalWeight = 0;
             foreach ($carts ?? [] as $cart) {
                 $product = $cart->product;
-                if ($product && $product->product_weight > 0) {
-                    $totalWeight += $product->product_weight * $cart->quantity;
+                if ($product && (float) ($product->product_weight ?? 0) > 0) {
+                    $totalWeight += (float) $product->product_weight * $cart->quantity;
                 }
             }
             if ($totalWeight > 0) {

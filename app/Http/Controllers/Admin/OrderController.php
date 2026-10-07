@@ -119,7 +119,6 @@ class OrderController extends Controller
             'items.*.size_id' => ['nullable', 'integer'],
             'items.*.color_id' => ['nullable', 'integer'],
             'items.*.price' => ['required', 'numeric', 'min:0', 'max:10000000'],
-            'delivery_charge' => ['required', 'numeric', 'min:0', 'max:10000000'],
             'new_item' => ['nullable', 'array'],
             'new_item.product_id' => ['nullable', 'integer'],
             'new_item.quantity' => ['nullable', 'integer', 'min:1', 'required_with:new_item.product_id'],
@@ -130,7 +129,6 @@ class OrderController extends Controller
         $itemService->update(
             $order,
             $validated['items'],
-            (float) $validated['delivery_charge'],
             $validated['new_item'] ?? [],
         );
 
