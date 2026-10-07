@@ -14,9 +14,14 @@ use Illuminate\Validation\ValidationException;
 
 class AdminOrderItemService
 {
-    public function update(Order $order, array $items, array $newItem = []): void
-    {
-        DB::transaction(function () use ($order, $items, $newItem) {
+    public function update(
+        Order $order,
+        array $items,
+        array $newItem = [],
+        ?float $manualDeliveryCharge = null,
+        bool $deliveryChargeManual = false,
+    ): void {
+        DB::transaction(function () use ($order, $items, $newItem, $manualDeliveryCharge, $deliveryChargeManual) {
             $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
 
             if ($order->order_status !== OrderStatus::PENDING || $order->payment_status !== PaymentStatus::PENDING) {
@@ -190,7 +195,7 @@ class AdminOrderItemService
                 $areaId = Area::where('name', $order->order_area)->value('id');
             }
             $deliveryAddress = $order->deliveryAddress();
-            $deliveryCharge = OrderRepository::calculateDeliveryCharge(
+            $calculatedDeliveryCharge = OrderRepository::calculateDeliveryCharge(
                 $order->shop,
                 collect($finalLines)->map(fn (array $line) => [
                     'product' => $line['product'],
@@ -200,6 +205,12 @@ class AdminOrderItemService
                 $deliveryAddress?->latitude ? (float) $deliveryAddress->latitude : null,
                 $deliveryAddress?->longitude ? (float) $deliveryAddress->longitude : null,
             );
+
+            $order->delivery_charge_manual = $deliveryChargeManual;
+            if ($deliveryChargeManual) {
+                $order->delivery_charge = $manualDeliveryCharge ?? $order->delivery_charge;
+            }
+            $deliveryCharge = OrderRepository::resolveDeliveryCharge($order, $calculatedDeliveryCharge);
 
             $taxAmount = 0;
             foreach ($order->vatTaxes()->lockForUpdate()->get() as $tax) {
@@ -225,6 +236,7 @@ class AdminOrderItemService
             $order->update([
                 'total_amount' => $subtotal,
                 'delivery_charge' => $deliveryCharge,
+                'delivery_charge_manual' => $deliveryChargeManual,
                 'tax_amount' => $taxAmount,
                 'coupon_discount' => $couponDiscount,
                 'payable_amount' => $payableAmount,

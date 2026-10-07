@@ -124,12 +124,16 @@ class OrderController extends Controller
             'new_item.quantity' => ['nullable', 'integer', 'min:1', 'required_with:new_item.product_id'],
             'new_item.size_id' => ['nullable', 'integer'],
             'new_item.color_id' => ['nullable', 'integer'],
+            'delivery_charge' => ['nullable', 'numeric', 'min:0'],
+            'delivery_charge_manual' => ['nullable', 'boolean'],
         ]);
 
         $itemService->update(
             $order,
             $validated['items'],
             $validated['new_item'] ?? [],
+            (float) ($validated['delivery_charge'] ?? null),
+            (bool) ($validated['delivery_charge_manual'] ?? false),
         );
 
         return redirect()->route('admin.order.show', $order)

@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Area;
 use App\Models\GeneraleSetting;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\User;
@@ -15,6 +16,19 @@ use Tests\TestCase;
 class OrderDeliveryCalculatorTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_manual_delivery_charge_overrides_calculated_charge(): void
+    {
+        $order = Order::make([
+            'delivery_charge' => 150,
+            'delivery_charge_manual' => true,
+        ]);
+
+        $this->assertSame(150.0, OrderRepository::resolveDeliveryCharge($order, 120));
+
+        $order->delivery_charge_manual = false;
+        $this->assertSame(120.0, OrderRepository::resolveDeliveryCharge($order, 120));
+    }
 
     public function test_delivery_charge_recalculates_from_current_order_product_quantities(): void
     {

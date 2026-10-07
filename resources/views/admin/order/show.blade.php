@@ -301,7 +301,29 @@
 
                         <div class="d-flex align-items-center justify-content-between gap-2">
                             <div>{{ __('Delivery Charge') }}</div>
-                            <div>{{ showCurrency($order->delivery_charge) }}</div>
+                            <div class="d-flex align-items-center gap-2">
+                                <input
+                                    type="number"
+                                    name="delivery_charge"
+                                    value="{{ old('delivery_charge', $order->delivery_charge) }}"
+                                    min="0"
+                                    step="0.01"
+                                    class="form-control form-control-sm w-auto"
+                                    form="order-items-form"
+                                    aria-label="{{ __('Delivery charge') }}"
+                                >
+                                <label class="form-check-label mb-0">
+                                    <input
+                                        type="checkbox"
+                                        name="delivery_charge_manual"
+                                        value="1"
+                                        class="form-check-input"
+                                        form="order-items-form"
+                                        @checked($order->delivery_charge_manual)
+                                    >
+                                    {{ __('Manual') }}
+                                </label>
+                            </div>
                         </div>
 
                         <div class="d-flex align-items-center justify-content-between gap-2">

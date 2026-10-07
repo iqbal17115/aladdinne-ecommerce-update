@@ -264,6 +264,13 @@ class OrderRepository extends Repository
         return $address->deliveryAmount();
     }
 
+    public static function resolveDeliveryCharge(Order $order, float $calculatedCharge): float
+    {
+        return $order->delivery_charge_manual
+            ? (float) $order->delivery_charge
+            : $calculatedCharge;
+    }
+
     public static function calculateDeliveryCharge(
         Shop $shop,
         $items,
