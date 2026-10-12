@@ -877,7 +877,10 @@ const fetchProductDetails = async () => {
         displayThumbnails.value = product.value.thumbnails ? product.value.thumbnails.slice() : [];
         updateThumbnailsForColor();
 
-        trackViewContent(product.value);
+        trackViewContent(product.value, {
+            color_id: formData.value.color,
+            size_id: formData.value.size,
+        });
 
         setTimeout(() => { isLoading.value = false; }, 100);
     });

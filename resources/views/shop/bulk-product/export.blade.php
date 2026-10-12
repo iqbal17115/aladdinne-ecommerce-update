@@ -75,10 +75,13 @@
 
                             <ul class="m-0 pl-4">
                                 <li>
-                                    {{_('When you download the file, it will be in .xlsx format.')}}
+                                    {{ __('All Products downloads as .xlsx. Facebook Catalog is available as .csv or .xlsx with the same Meta catalog columns.') }}
                                 </li>
                                 <li>
-                                    {{_("Click 'Reset' if you want to discard your changes and download the data sorted in the default order.")}}
+                                    {{ __('Each size and color combination is exported as a separate variant row. If an image is missing, its image_link is left blank so the file can still be downloaded.') }}
+                                </li>
+                                <li>
+                                    {{ __("Click 'Reset' to restore the default export type.") }}
                                 </li>
                             </ul>
                         </div>
@@ -104,8 +107,13 @@
                 </div>
 
                 @hasPermission('shop.bulk-product-export.export')
-                <form action="{{ route('shop.bulk-product-export.export') }}" method="POST">
+                <form action="{{ route('shop.bulk-product-export.export') }}" method="POST" data-file-download>
                     @csrf
+                    @if ($errors->has('type'))
+                        <div class="alert alert-danger" role="alert">
+                            {{ $errors->first('type') }}
+                        </div>
+                    @endif
                     <div class="row">
                         <div class="col-lg-4">
                             <label for="type" class="form-label">
@@ -113,9 +121,18 @@
                             </label>
                             <select name="type" id="type" class="form-select form-control">
                                 <option value="all">
-                                    {{ __('All Products') }}
+                                    {{ __('All Products (Excel)') }}
+                                </option>
+                                <option value="facebook_catalog_csv">
+                                    {{ __('Facebook Catalog (CSV)') }}
+                                </option>
+                                <option value="facebook_catalog_xlsx">
+                                    {{ __('Facebook Catalog (Excel)') }}
                                 </option>
                             </select>
+                            <div class="form-text">
+                                {{ __('Both Facebook formats use the same catalog columns and size/color variants. Products without saved images are exported with a blank image_link.') }}
+                            </div>
                         </div>
                     </div>
 

@@ -73,9 +73,22 @@ export function useMetaPixel() {
         return discount > 0 ? discount : Number(product?.price ?? 0);
     };
 
+    /** Keep event item IDs identical to the Facebook catalog export IDs. */
+    const catalogItemId = (product) => {
+        const baseId = String(product?.code || product?.id || "");
+        const colorId = product?.color?.id ?? product?.color_id ?? null;
+        const sizeId = product?.size?.id ?? product?.size_id ?? null;
+        const suffix = [
+            colorId !== null && colorId !== "" ? `C${colorId}` : null,
+            sizeId !== null && sizeId !== "" ? `S${sizeId}` : null,
+        ].filter(Boolean).join("-");
+
+        return baseId + (suffix ? `-${suffix}` : "");
+    };
+
     /** One line item in Meta's `contents` array. */
     const contentOf = (product, quantity = 1) => ({
-        id: String(product?.id ?? ""),
+        id: catalogItemId(product),
         quantity: Number(quantity) || 1,
         item_price: priceOf(product),
     });
@@ -125,32 +138,36 @@ export function useMetaPixel() {
             .catch(() => {});
     };
 
-    const trackViewContent = (product) => {
+    const trackViewContent = (product, variant = {}) => {
         if (!product?.id) {
             return;
         }
 
+        const itemId = catalogItemId({ ...product, ...variant });
+
         track("ViewContent", {
             content_type: "product",
-            content_ids: [String(product.id)],
+            content_ids: [itemId],
             content_name: product.name,
             content_category: product.category || product.brand || product.shop?.name || null,
-            contents: [contentOf(product)],
+            contents: [contentOf({ ...product, ...variant })],
             value: priceOf(product),
             currency: currency(),
         });
     };
 
-    const trackAddToCart = (product, quantity = 1) => {
+    const trackAddToCart = (product, quantity = 1, variant = {}) => {
         if (!product?.id) {
             return;
         }
 
+        const item = { ...product, ...variant };
+
         track("AddToCart", {
             content_type: "product",
-            content_ids: [String(product.id)],
+            content_ids: [catalogItemId(item)],
             content_name: product.name,
-            contents: [contentOf(product, quantity)],
+            contents: [contentOf(item, quantity)],
             num_items: Number(quantity) || 1,
             value: priceOf(product) * (Number(quantity) || 1),
             currency: currency(),

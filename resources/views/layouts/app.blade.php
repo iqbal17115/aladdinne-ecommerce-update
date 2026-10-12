@@ -1009,6 +1009,10 @@
 
             // form submit loader
             $('form').on('submit', function() {
+                if ($(this).is('[data-file-download]')) {
+                    return;
+                }
+
                 var submitButton = $(this).find('button[type="submit"]');
 
                 submitButton.prop('disabled', true);

@@ -58,6 +58,7 @@ class ProductResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'code' => $this->code,
             'slug' => $this->slug,
             'is_digital' => (bool) $this->is_digital,
             'name' => $name,

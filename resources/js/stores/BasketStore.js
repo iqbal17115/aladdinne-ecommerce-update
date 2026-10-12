@@ -121,7 +121,10 @@ export const useBasketStore = defineStore("basketStore", {
                     this.isLoadingCart = false;
 
                     // After the guest-token retry above, so it only fires once.
-                    useMetaPixel().trackAddToCart(product, data.quantity ?? 1);
+                    useMetaPixel().trackAddToCart(product, data.quantity ?? 1, {
+                        color_id: data.color,
+                        size_id: data.size,
+                    });
 
                     if (!data.is_buy_now) {
                         this.total = response.data.data.total;
