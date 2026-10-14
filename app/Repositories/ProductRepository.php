@@ -592,7 +592,7 @@ class ProductRepository extends Repository
                                 foreach ($files as $file) {
                                     if (basename($file) == $thumbnail) {
                                         $storeFile = $file;
-                                        break;
+                                        break 2;
                                     }
                                 }
                             }
